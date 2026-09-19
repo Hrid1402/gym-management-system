@@ -1,9 +1,14 @@
-import 'dotenv/config'; // Must be the very first import to load the connection string
+import 'dotenv/config';
 import express from 'express';
 import { pool } from './db/index.js'; // Named import matching the export
+import router from './routes/index.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+app.use(express.json());
+
+app.use('/api', router);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Gym' });
