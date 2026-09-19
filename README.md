@@ -36,3 +36,6 @@ npm run dev
 ## Useful Links
 - **Local Server:** http://localhost:3000
 - **Database Connection Test:** http://localhost:3000/api/test-db
+
+
+#Pull request funciona xd
