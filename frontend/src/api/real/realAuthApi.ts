@@ -3,6 +3,8 @@ import { AuthSession, LoginCredentials, RegisterClientInput, User, Client } from
 import { apiClient } from '../apiClient';
 import { getCookie, setCookie, deleteCookie, COOKIE_AUTH_TOKEN } from '../../utils/cookies';
 
+import { formatDateForInput } from '../../utils/dateUtils';
+
 export class RealAuthApi implements IAuthApi {
   async login(credentials: LoginCredentials): Promise<AuthSession> {
     const res = await apiClient.post<{
@@ -39,6 +41,8 @@ export class RealAuthApi implements IAuthApi {
         lastName: rawUser.last_name || '',
         phone: rawUser.phone || '',
         email: credentials.email,
+        dateOfBirth: formatDateForInput(rawUser.date_of_birth),
+        address: rawUser.address || '',
         isActive: true,
       };
     }
@@ -49,6 +53,8 @@ export class RealAuthApi implements IAuthApi {
   async logout(): Promise<void> {
     try {
       await apiClient.post('auth/logout');
+    } catch (err) {
+      console.warn('Backend logout failed or token already invalid:', err);
     } finally {
       deleteCookie(COOKIE_AUTH_TOKEN);
     }
@@ -83,6 +89,8 @@ export class RealAuthApi implements IAuthApi {
           lastName: rawUser.last_name || '',
           phone: rawUser.phone || '',
           email: rawUser.email,
+          dateOfBirth: formatDateForInput(rawUser.date_of_birth),
+          address: rawUser.address || '',
           isActive: true,
         };
       }
@@ -111,5 +119,58 @@ export class RealAuthApi implements IAuthApi {
 
     // Auto-login after registration
     return this.login({ email: data.email, password: data.password });
+  }
+
+  async updateProfile(data: any): Promise<AuthSession> {
+    const payload = { ...data };
+    if (payload.date_of_birth !== undefined) {
+      payload.date_of_birth = payload.date_of_birth ? formatDateForInput(payload.date_of_birth) : null;
+    }
+    const res = await apiClient.put<any>('auth/update-profile', payload);
+    const rawUser = res.user || res.client || res;
+    const isClient = rawUser.type === 'client' || !!rawUser.first_name || !!data.first_name;
+
+    const user: User = {
+      id: rawUser.id || '',
+      name: isClient ? `${rawUser.first_name || data.first_name || ''} ${rawUser.last_name || data.last_name || ''}`.trim() : (rawUser.name || data.name || ''),
+      email: rawUser.email || data.email || '',
+      role: isClient ? 'CLIENT' : (rawUser.role || 'ADMIN'),
+      isActive: isClient ? true : (rawUser.is_active !== undefined ? Boolean(rawUser.is_active) : true),
+      type: isClient ? 'client' : 'staff',
+    };
+
+    let client: Client | undefined = undefined;
+    if (isClient) {
+      client = {
+        id: rawUser.id || '',
+        dni: rawUser.dni || data.dni || '',
+        firstName: rawUser.first_name || data.first_name || '',
+        lastName: rawUser.last_name || data.last_name || '',
+        phone: rawUser.phone || data.phone || '',
+        email: rawUser.email || data.email || '',
+        dateOfBirth: formatDateForInput(rawUser.date_of_birth || data.date_of_birth),
+        address: rawUser.address || data.address || '',
+        isActive: true,
+      };
+    }
+
+    const token = getCookie(COOKIE_AUTH_TOKEN) || undefined;
+    return { token, user, client };
+  }
+
+  async changePassword(password: string): Promise<{ success: boolean; message: string }> {
+    const res = await apiClient.post<{ message: string }>('auth/change-password', { new_password: password });
+    return { success: true, message: res.message || 'Password updated successfully' };
+  }
+
+  async updatePasswordWithToken(token: string, password: string): Promise<{ success: boolean; message: string }> {
+    const res = await apiClient.request<{ message: string }>('auth/update-password', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ new_password: password }),
+    });
+    return { success: true, message: res.message || 'Password updated successfully. Please log in with your new password.' };
   }
 }

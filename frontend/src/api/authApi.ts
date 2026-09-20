@@ -6,4 +6,7 @@ export interface IAuthApi {
   getCurrentUser(): Promise<AuthSession | null>;
   recoverPassword(email: string): Promise<{ success: boolean; message: string }>;
   registerClient(data: RegisterClientInput): Promise<AuthSession>;
+  updateProfile(data: any): Promise<AuthSession>;
+  changePassword(password: string): Promise<{ success: boolean; message: string }>;
+  updatePasswordWithToken(token: string, password: string): Promise<{ success: boolean; message: string }>;
 }

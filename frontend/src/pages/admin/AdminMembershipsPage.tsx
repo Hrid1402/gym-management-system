@@ -7,6 +7,7 @@ import { Select } from '../../components/ui/Select';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { formatDateForDisplay } from '../../utils/dateUtils';
 
 type SortOption = 'default' | 'start_asc' | 'start_desc' | 'end_asc' | 'price_desc' | 'price_asc';
 
@@ -218,8 +219,8 @@ export const AdminMembershipsPage: React.FC = () => {
                         '—'
                       )}
                     </td>
-                    <td>{mem.startDate ? new Date(mem.startDate).toLocaleDateString() : '—'}</td>
-                    <td>{mem.endDate ? new Date(mem.endDate).toLocaleDateString() : '—'}</td>
+                    <td>{mem.startDate ? formatDateForDisplay(mem.startDate) : '—'}</td>
+                    <td>{mem.endDate ? formatDateForDisplay(mem.endDate) : '—'}</td>
                     <td>
                       <StatusBadge status={mem.status} />
                     </td>

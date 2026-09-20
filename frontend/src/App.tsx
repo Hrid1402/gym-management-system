@@ -10,6 +10,7 @@ import { DashboardLayout } from './layouts/DashboardLayout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 
 import { ClientDashboardPage } from './pages/client/ClientDashboardPage';
 import { ClientProfilePage } from './pages/client/ClientProfilePage';
@@ -30,19 +31,16 @@ import { AdminPlansPage } from './pages/admin/AdminPlansPage';
 import { NewPlanPage } from './pages/admin/NewPlanPage';
 import { EditPlanPage } from './pages/admin/EditPlanPage';
 import { AdminUsersPage } from './pages/admin/AdminUsersPage';
+import { StaffProfilePage } from './pages/admin/StaffProfilePage';
 
 import { NotFoundPage } from './pages/NotFoundPage';
-import { LoadingState } from './components/ui/LoadingState';
+import { InitialAppLoader } from './components/ui/InitialAppLoader';
 
 const RootRedirect: React.FC = () => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <LoadingState message="Loading Gym Management System..." />
-      </div>
-    );
+    return <InitialAppLoader message="Connecting to GymManager server..." subtext="The server may take a few seconds to respond on initial cold start." />;
   }
 
   if (!user) {
@@ -74,6 +72,7 @@ export const App: React.FC = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
           </Route>
 
           {/* Protected Dashboard Routes */}
@@ -90,6 +89,7 @@ export const App: React.FC = () => {
               {/* Receptionist Routes */}
               <Route element={<RoleRoute allowedRoles={['RECEPTIONIST']} />}>
                 <Route path="/reception" element={<ReceptionDashboardPage />} />
+                <Route path="/reception/profile" element={<StaffProfilePage />} />
                 <Route path="/reception/clients" element={<ReceptionClientsPage />} />
                 <Route path="/reception/clients/new" element={<NewClientPage />} />
                 <Route path="/reception/clients/:id" element={<ClientDetailPage />} />
@@ -100,6 +100,7 @@ export const App: React.FC = () => {
               {/* Admin Routes */}
               <Route element={<RoleRoute allowedRoles={['ADMIN']} />}>
                 <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin/profile" element={<StaffProfilePage />} />
                 <Route path="/admin/clients" element={<AdminClientsPage />} />
                 <Route path="/admin/memberships" element={<AdminMembershipsPage />} />
                 <Route path="/admin/plans" element={<AdminPlansPage />} />

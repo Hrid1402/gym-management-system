@@ -10,6 +10,7 @@ export interface User {
   role: UserRole;
   isActive: boolean;
   type?: 'client' | 'staff';
+  createdAt?: string;
 }
 
 export interface ClientCurrentMembership {

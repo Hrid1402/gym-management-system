@@ -19,7 +19,7 @@ export const requireAuth = async (req, res, next) => {
 
   try {
     const clientResult = await pool.query(
-      'SELECT id, first_name, last_name, email, dni, phone FROM clients WHERE supabase_user_id = $1',
+      'SELECT id, first_name, last_name, email, dni, phone, date_of_birth, address FROM clients WHERE supabase_user_id = $1',
       [user.id]
     );
 

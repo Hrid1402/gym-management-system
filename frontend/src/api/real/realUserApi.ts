@@ -11,6 +11,7 @@ export class RealUserApi implements IUserApi {
       role: raw.role,
       isActive: raw.is_active !== undefined ? Boolean(raw.is_active) : (raw.isActive !== undefined ? Boolean(raw.isActive) : true),
       type: 'staff',
+      createdAt: raw.created_at || raw.createdAt,
     };
   }
 

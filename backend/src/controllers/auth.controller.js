@@ -1,5 +1,5 @@
 import { pool } from '../db/index.js';
-import { supabase } from '../lib/supabaseClient.js';
+import { supabase, supabaseAdmin } from '../lib/supabaseClient.js';
 import 'dotenv/config';
 
 // --- EXISTING LOGIC ---
@@ -87,17 +87,27 @@ export const requestPasswordRecovery = async (req, res) => {
 export const updatePassword = async (req, res) => {
   const { new_password } = req.body;
   const authHeader = req.headers.authorization;
+  
   if (!new_password) return res.status(400).json({ error: 'New password required' });
   if (!authHeader) return res.status(401).json({ error: 'Missing token' });
 
+  const token = authHeader.split(' ')[1];
+
   try {
-    const { error } = await supabase.auth.updateUser(
-      { password: new_password },
-      { accessToken: authHeader.split(' ')[1] }
+    // 1. Verify the recovery token and get the exact Supabase User ID
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) return res.status(401).json({ error: 'Invalid or expired recovery token' });
+
+    // 2. Use Admin API to safely force the password change
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      user.id, 
+      { password: new_password }
     );
-    if (error) return res.status(400).json({ error: error.message });
+    if (updateError) return res.status(400).json({ error: updateError.message });
+
     return res.status(200).json({ message: 'Password updated successfully' });
   } catch (error) {
+    console.error('Update password error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -115,10 +125,20 @@ export const changePassword = async (req, res) => {
   if (!new_password) return res.status(400).json({ error: 'New password is required' });
 
   try {
-    const { error } = await supabase.auth.updateUser({ password: new_password }, { accessToken: token });
-    if (error) return res.status(400).json({ error: error.message });
+    // 1. Verify the current session token
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) return res.status(401).json({ error: 'Invalid session' });
+
+    // 2. Use Admin API to safely force the password change
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      user.id, 
+      { password: new_password }
+    );
+    if (updateError) return res.status(400).json({ error: updateError.message });
+
     return res.status(200).json({ message: 'Password changed successfully' });
   } catch (error) {
+    console.error('Change password error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -130,13 +150,20 @@ export const updateProfile = async (req, res) => {
   const userType = req.user.type;
 
   try {
-    // 1. If email is being changed, update it in Supabase first
-    if (email && email !== req.user.email) {
-      const { error: authError } = await supabase.auth.updateUser({ email }, { accessToken: token });
-      if (authError) return res.status(400).json({ error: `Supabase Auth Error: ${authError.message}` });
+    // 1. Get their exact Supabase ID using their token
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) return res.status(401).json({ error: 'Invalid session' });
+
+    // 2. If email is being changed, update it via Admin API first
+    if (email && email !== user.email) {
+      const { error: emailError } = await supabaseAdmin.auth.admin.updateUserById(
+        user.id, 
+        { email: email }
+      );
+      if (emailError) return res.status(400).json({ error: `Supabase Error: ${emailError.message}` });
     }
 
-    // 2. Update local database based on user type
+    // 3. Update local database based on user type
     let updatedProfile;
 
     if (userType === 'client') {
@@ -157,7 +184,6 @@ export const updateProfile = async (req, res) => {
       );
       updatedProfile = result.rows[0];
     } else {
-      // Staff profile update
       const { name } = req.body;
       const result = await pool.query(
         `UPDATE users 

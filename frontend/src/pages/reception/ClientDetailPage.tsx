@@ -10,6 +10,7 @@ import { Modal } from '../../components/ui/Modal';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Edit, CreditCard, Trash2, ArrowLeft, Calendar, Phone, Mail, MapPin, FileText, Ban } from 'lucide-react';
+import { formatDateForDisplay } from '../../utils/dateUtils';
 
 export const ClientDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -141,7 +142,7 @@ export const ClientDetailPage: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
               <Calendar size={18} style={{ color: 'var(--color-neutral-400)' }} />
               <span style={{ color: 'var(--color-neutral-500)' }}>Date of Birth:</span>
-              <strong>{client.dateOfBirth || '—'}</strong>
+              <strong>{formatDateForDisplay(client.dateOfBirth)}</strong>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>

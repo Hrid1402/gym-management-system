@@ -7,22 +7,14 @@ import { Button } from '../../components/ui/Button';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { UserCheck, KeyRound, CheckCircle, AlertCircle } from 'lucide-react';
 
-import { formatDateForInput } from '../../utils/dateUtils';
+export const StaffProfilePage: React.FC = () => {
+  const { user, isLoading, updateProfile, changePassword } = useAuth();
 
-export const ClientProfilePage: React.FC = () => {
-  const { client, user, isLoading, updateProfile, changePassword } = useAuth();
-
-  const [firstName, setFirstName] = useState<string>('');
-  const [lastName, setLastName] = useState<string>('');
-  const [dni, setDni] = useState<string>('');
+  const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
-  const [phone, setPhone] = useState<string>('');
-  const [dateOfBirth, setDateOfBirth] = useState<string>('');
-  const [address, setAddress] = useState<string>('');
-
-  const [saving, setSaving] = useState<boolean>(false);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [savingProfile, setSavingProfile] = useState<boolean>(false);
+  const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   // Change Password state
   const [newPassword, setNewPassword] = useState<string>('');
@@ -32,47 +24,32 @@ export const ClientProfilePage: React.FC = () => {
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (client) {
-      setFirstName(client.firstName || '');
-      setLastName(client.lastName || '');
-      setDni(client.dni || '');
-      setEmail(client.email || '');
-      setPhone(client.phone || '');
-      setDateOfBirth(formatDateForInput(client.dateOfBirth));
-      setAddress(client.address || '');
-    } else if (user) {
-      const parts = user.name ? user.name.split(' ') : ['', ''];
-      setFirstName(parts[0] || '');
-      setLastName(parts.slice(1).join(' ') || '');
+    if (user) {
+      setName(user.name || '');
       setEmail(user.email || '');
     }
-  }, [client, user]);
+  }, [user]);
 
   if (isLoading) {
-    return <LoadingState message="Loading profile information..." />;
+    return <LoadingState message="Loading account settings..." />;
   }
 
-  const handleSubmitProfile = async (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    setErrorMsg(null);
-    setSuccessMsg(null);
+    setSavingProfile(true);
+    setProfileError(null);
+    setProfileSuccess(null);
 
     try {
       await updateProfile({
-        first_name: firstName,
-        last_name: lastName,
-        dni,
+        name,
         email,
-        phone,
-        date_of_birth: dateOfBirth ? formatDateForInput(dateOfBirth) : null,
-        address,
       });
-      setSuccessMsg('Your profile data has been updated successfully!');
+      setProfileSuccess('Account details updated successfully!');
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to update profile details');
+      setProfileError(err.message || 'Failed to update profile details');
     } finally {
-      setSaving(false);
+      setSavingProfile(false);
     }
   };
 
@@ -105,11 +82,11 @@ export const ClientProfilePage: React.FC = () => {
 
   return (
     <div>
-      <PageHeader title="My Profile & Settings" subtitle="Manage your account details and password" />
+      <PageHeader title="Staff Settings & Profile" subtitle="Manage your staff account information and password" />
 
       <div style={{ maxWidth: '650px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {/* Profile Card */}
-        <Card title="Personal Profile Information">
+        <Card title="Staff Profile Details">
           <div
             style={{
               display: 'flex',
@@ -126,11 +103,11 @@ export const ClientProfilePage: React.FC = () => {
           >
             <UserCheck size={20} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
             <div>
-              Update your profile information below. Email changes will automatically sync to your login account.
+              Role: <strong>{user?.role}</strong>. Updates to email will sync automatically with your login account.
             </div>
           </div>
 
-          {successMsg && (
+          {profileSuccess && (
             <div
               style={{
                 display: 'flex',
@@ -146,11 +123,11 @@ export const ClientProfilePage: React.FC = () => {
               }}
             >
               <CheckCircle size={18} />
-              <span>{successMsg}</span>
+              <span>{profileSuccess}</span>
             </div>
           )}
 
-          {errorMsg && (
+          {profileError && (
             <div
               style={{
                 display: 'flex',
@@ -166,30 +143,15 @@ export const ClientProfilePage: React.FC = () => {
               }}
             >
               <AlertCircle size={18} />
-              <span>{errorMsg}</span>
+              <span>{profileError}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmitProfile}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <Input
-                label="First Name *"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-              />
-              <Input
-                label="Last Name *"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required
-              />
-            </div>
-
+          <form onSubmit={handleSaveProfile}>
             <Input
-              label="DNI / Identification *"
-              value={dni}
-              onChange={(e) => setDni(e.target.value)}
+              label="Full Name *"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
             />
 
@@ -201,30 +163,9 @@ export const ClientProfilePage: React.FC = () => {
               required
             />
 
-            <Input
-              label="Phone Number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="e.g. +1 555-0199"
-            />
-
-            <Input
-              label="Date of Birth"
-              type="date"
-              value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
-            />
-
-            <Input
-              label="Address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="e.g. 123 Main St, City"
-            />
-
-            <div style={{ marginTop: '1.5rem' }}>
-              <Button type="submit" variant="primary" isLoading={saving}>
-                Save Changes
+            <div style={{ marginTop: '1.25rem' }}>
+              <Button type="submit" variant="primary" isLoading={savingProfile}>
+                Save Profile Changes
               </Button>
             </div>
           </form>
@@ -235,7 +176,7 @@ export const ClientProfilePage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
             <KeyRound size={20} style={{ color: 'var(--color-neutral-600)' }} />
             <span style={{ fontSize: '0.875rem', color: 'var(--color-neutral-600)' }}>
-              Update your client account password.
+              Update your account access password below.
             </span>
           </div>
 

@@ -9,6 +9,8 @@ import { LoadingState } from '../../components/ui/LoadingState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { ArrowLeft } from 'lucide-react';
 
+import { formatDateForInput } from '../../utils/dateUtils';
+
 export const EditClientPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -39,7 +41,7 @@ export const EditClientPage: React.FC = () => {
         dni: client.dni || '',
         phone: client.phone || '',
         email: client.email || '',
-        dateOfBirth: client.dateOfBirth || '',
+        dateOfBirth: formatDateForInput(client.dateOfBirth),
         address: client.address || '',
       });
     } catch (err: any) {
@@ -65,7 +67,10 @@ export const EditClientPage: React.FC = () => {
     setErrorMsg(null);
 
     try {
-      await clientService.updateClient(id, formData);
+      await clientService.updateClient(id, {
+        ...formData,
+        dateOfBirth: formData.dateOfBirth ? formatDateForInput(formData.dateOfBirth) : '',
+      });
       navigate(`/reception/clients/${id}`);
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to update client.');

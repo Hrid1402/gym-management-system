@@ -61,6 +61,10 @@ export const DashboardLayout: React.FC = () => {
                 <LayoutDashboard size={18} />
                 <span>Dashboard</span>
               </NavLink>
+              <NavLink to="/reception/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <UserIcon size={18} />
+                <span>My Profile</span>
+              </NavLink>
               <NavLink to="/reception/clients" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 <Users size={18} />
                 <span>Clients</span>
@@ -81,6 +85,10 @@ export const DashboardLayout: React.FC = () => {
               <NavLink to="/admin" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 <LayoutDashboard size={18} />
                 <span>Dashboard</span>
+              </NavLink>
+              <NavLink to="/admin/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <UserIcon size={18} />
+                <span>My Profile</span>
               </NavLink>
               <NavLink to="/admin/clients" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 <Users size={18} />

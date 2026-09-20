@@ -19,7 +19,7 @@ class ApiClient {
   }
 
   async request<T>(endpoint: string, options: RequestInit & { timeout?: number } = {}): Promise<T> {
-    const { timeout = 10000, ...fetchOptions } = options;
+    const { timeout = 30000, ...fetchOptions } = options;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 

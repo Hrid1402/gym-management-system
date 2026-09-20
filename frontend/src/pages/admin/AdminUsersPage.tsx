@@ -9,11 +9,12 @@ import { Modal } from '../../components/ui/Modal';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { CheckCircle, XCircle, UserPlus } from 'lucide-react';
+import { CheckCircle, XCircle, UserPlus, Info } from 'lucide-react';
 
 export const AdminUsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedStaff, setSelectedStaff] = useState<User | null>(null);
 
   // Modal State
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
@@ -110,7 +111,7 @@ export const AdminUsersPage: React.FC = () => {
     <div>
       <PageHeader
         title="Staff User Management"
-        subtitle="Manage internal staff accounts (Admins, Receptionists), update roles, and grant/revoke access"
+        subtitle="Manage internal staff accounts (Admins, Receptionists), update roles, and grant/revoke access. Click any staff member to view full details."
         action={
           <Button
             variant="primary"
@@ -194,14 +195,30 @@ export const AdminUsersPage: React.FC = () => {
                 <th>Current Role</th>
                 <th>Status</th>
                 <th>Change Role</th>
-                <th>Account Status Action</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.map((u) => (
-                <tr key={u.id}>
+                <tr
+                  key={u.id}
+                  style={{ cursor: 'pointer' }}
+                  onClick={(e) => {
+                    // Avoid opening modal if clicking dropdown or buttons directly
+                    const target = e.target as HTMLElement;
+                    if (target.tagName === 'SELECT' || target.tagName === 'BUTTON' || target.closest('button') || target.closest('select')) {
+                      return;
+                    }
+                    setSelectedStaff(u);
+                  }}
+                >
                   <td>
-                    <strong style={{ color: 'var(--color-neutral-900)' }}>{u.name}</strong>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <strong style={{ color: 'var(--color-neutral-900)' }}>{u.name}</strong>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center' }}>
+                        <Info size={14} style={{ marginLeft: '4px' }} />
+                      </span>
+                    </div>
                   </td>
                   <td>{u.email}</td>
                   <td>
@@ -210,7 +227,7 @@ export const AdminUsersPage: React.FC = () => {
                   <td>
                     <StatusBadge isActive={u.isActive} />
                   </td>
-                  <td>
+                  <td onClick={(e) => e.stopPropagation()}>
                     <select
                       className="form-control"
                       style={{ width: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
@@ -221,21 +238,129 @@ export const AdminUsersPage: React.FC = () => {
                       <option value="RECEPTIONIST">RECEPTIONIST</option>
                     </select>
                   </td>
-                  <td>
-                    <Button
-                      variant={u.isActive ? 'outline-danger' : 'secondary'}
-                      size="sm"
-                      icon={u.isActive ? <XCircle size={14} /> : <CheckCircle size={14} />}
-                      onClick={() => handleToggleStatus(u)}
-                    >
-                      {u.isActive ? 'Deactivate' : 'Activate'}
-                    </Button>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        icon={<Info size={14} />}
+                        onClick={() => setSelectedStaff(u)}
+                      >
+                        Details
+                      </Button>
+                      <Button
+                        variant={u.isActive ? 'outline-danger' : 'secondary'}
+                        size="sm"
+                        icon={u.isActive ? <XCircle size={14} /> : <CheckCircle size={14} />}
+                        onClick={() => handleToggleStatus(u)}
+                      >
+                        {u.isActive ? 'Deactivate' : 'Activate'}
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* Staff Details Modal */}
+      {selectedStaff && (
+        <Modal
+          isOpen={!!selectedStaff}
+          onClose={() => setSelectedStaff(null)}
+          title="Staff Member Profile & Details"
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid var(--color-neutral-200)' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-neutral-900)' }}>
+                  {selectedStaff.name}
+                </h3>
+                <span style={{ fontSize: '0.875rem', color: 'var(--color-neutral-500)' }}>{selectedStaff.email}</span>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <StatusBadge role={selectedStaff.role} />
+                <StatusBadge isActive={selectedStaff.isActive} />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.875rem' }}>
+              <div style={{ background: 'var(--color-neutral-50)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-neutral-200)' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--color-neutral-500)', fontWeight: 600, marginBottom: '0.25rem' }}>
+                  User Database ID
+                </div>
+                <div style={{ fontFamily: 'monospace', color: 'var(--color-neutral-800)', wordBreak: 'break-all' }}>
+                  {selectedStaff.id}
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--color-neutral-50)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-neutral-200)' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--color-neutral-500)', fontWeight: 600, marginBottom: '0.25rem' }}>
+                  Account Type
+                </div>
+                <div style={{ color: 'var(--color-neutral-800)', textTransform: 'capitalize', fontWeight: 600 }}>
+                  Internal {selectedStaff.type || 'Staff'} Account
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--color-neutral-50)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-neutral-200)' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--color-neutral-500)', fontWeight: 600, marginBottom: '0.25rem' }}>
+                  System Role
+                </div>
+                <div style={{ color: 'var(--color-neutral-800)', fontWeight: 600 }}>
+                  {selectedStaff.role === 'ADMIN' ? 'Manager (Admin)' : selectedStaff.role}
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--color-neutral-50)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-neutral-200)' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--color-neutral-500)', fontWeight: 600, marginBottom: '0.25rem' }}>
+                  Account Created
+                </div>
+                <div style={{ color: 'var(--color-neutral-800)' }}>
+                  {selectedStaff.createdAt ? new Date(selectedStaff.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid var(--color-neutral-200)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-neutral-700)' }}>Change Role:</span>
+                <select
+                  className="form-control"
+                  style={{ width: 'auto', padding: '0.35rem 0.6rem', fontSize: '0.875rem' }}
+                  value={selectedStaff.role}
+                  onChange={async (e) => {
+                    const newRole = e.target.value as UserRole;
+                    await handleRoleChange(selectedStaff, newRole);
+                    setSelectedStaff({ ...selectedStaff, role: newRole });
+                  }}
+                >
+                  <option value="ADMIN">ADMIN (Manager)</option>
+                  <option value="RECEPTIONIST">RECEPTIONIST</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <Button
+                  variant={selectedStaff.isActive ? 'outline-danger' : 'secondary'}
+                  size="sm"
+                  icon={selectedStaff.isActive ? <XCircle size={14} /> : <CheckCircle size={14} />}
+                  onClick={async () => {
+                    await handleToggleStatus(selectedStaff);
+                    setSelectedStaff({ ...selectedStaff, isActive: !selectedStaff.isActive });
+                  }}
+                >
+                  {selectedStaff.isActive ? 'Deactivate Staff Account' : 'Activate Staff Account'}
+                </Button>
+                <Button variant="secondary" size="sm" onClick={() => setSelectedStaff(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {/* Create Staff Member Modal */}

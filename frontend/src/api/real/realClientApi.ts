@@ -1,6 +1,7 @@
 import { IClientApi } from '../clientApi';
 import { Client, UpdateClientInput } from '../../types';
 import { apiClient } from '../apiClient';
+import { formatDateForInput } from '../../utils/dateUtils';
 
 export class RealClientApi implements IClientApi {
   private mapClient(raw: any): Client {
@@ -11,7 +12,7 @@ export class RealClientApi implements IClientApi {
       lastName: raw.last_name || '',
       phone: raw.phone || '',
       email: raw.email || '',
-      dateOfBirth: raw.date_of_birth || '',
+      dateOfBirth: formatDateForInput(raw.date_of_birth),
       address: raw.address || '',
       isActive: true,
       currentMembership: raw.current_membership
@@ -44,7 +45,7 @@ export class RealClientApi implements IClientApi {
     if (data.lastName !== undefined) body.last_name = data.lastName;
     if (data.phone !== undefined) body.phone = data.phone;
     if (data.address !== undefined) body.address = data.address;
-    if (data.dateOfBirth !== undefined) body.date_of_birth = data.dateOfBirth;
+    if (data.dateOfBirth !== undefined) body.date_of_birth = data.dateOfBirth ? formatDateForInput(data.dateOfBirth) : null;
 
     const res = await apiClient.put<{ message: string; client: any }>(`clients/${id}`, body);
     return this.mapClient(res.client || res);

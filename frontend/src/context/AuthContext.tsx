@@ -12,6 +12,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   registerClient: (data: RegisterClientInput) => Promise<void>;
   recoverPassword: (email: string) => Promise<{ success: boolean; message: string }>;
+  updateProfile: (data: any) => Promise<void>;
+  changePassword: (password: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -80,11 +82,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       await authService.logout();
+    } catch (err) {
+      console.warn('Backend logout encountered error, clearing local state:', err);
+    } finally {
       setUser(null);
       setClient(null);
       setToken(null);
       deleteCookie(COOKIE_AUTH_TOKEN);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -103,6 +107,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const recoverPassword = async (email: string) => {
     return authService.recoverPassword(email);
+  };
+
+  const updateProfile = async (data: any) => {
+    const session = await authService.updateProfile(data);
+    if (session.user) setUser(session.user);
+    if (session.client) setClient(session.client);
+  };
+
+  const changePassword = async (password: string) => {
+    await authService.changePassword(password);
   };
 
   const refreshProfile = async () => {
@@ -128,6 +142,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         registerClient,
         recoverPassword,
+        updateProfile,
+        changePassword,
         refreshProfile,
       }}
     >

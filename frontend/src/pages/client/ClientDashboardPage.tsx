@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/Button';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { Modal } from '../../components/ui/Modal';
 import { CreditCard, Calendar, UserCheck, AlertTriangle } from 'lucide-react';
+import { formatDateForDisplay } from '../../utils/dateUtils';
 
 export const ClientDashboardPage: React.FC = () => {
   const { client, user, isLoading: authLoading } = useAuth();
@@ -109,7 +110,7 @@ export const ClientDashboardPage: React.FC = () => {
                     <Calendar size={14} /> Start Date
                   </span>
                   <strong style={{ fontSize: '1rem', color: 'var(--color-neutral-800)' }}>
-                    {membership.startDate ? new Date(membership.startDate).toLocaleDateString() : '—'}
+                    {membership.startDate ? formatDateForDisplay(membership.startDate) : '—'}
                   </strong>
                 </div>
 
@@ -118,7 +119,7 @@ export const ClientDashboardPage: React.FC = () => {
                     <Calendar size={14} /> End Date
                   </span>
                   <strong style={{ fontSize: '1rem', color: 'var(--color-neutral-800)' }}>
-                    {membership.endDate ? new Date(membership.endDate).toLocaleDateString() : '—'}
+                    {membership.endDate ? formatDateForDisplay(membership.endDate) : '—'}
                   </strong>
                 </div>
               </div>

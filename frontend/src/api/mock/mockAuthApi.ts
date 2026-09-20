@@ -141,4 +141,54 @@ export class MockAuthApi implements IAuthApi {
 
     return session;
   }
+
+  async updateProfile(data: any): Promise<AuthSession> {
+    await delay();
+    const sessionRaw = localStorage.getItem(SESSION_KEY);
+    if (!sessionRaw) throw createApiError('Unauthenticated', 401);
+
+    const session: AuthSession = JSON.parse(sessionRaw);
+    const store = getMockStore();
+
+    const userIndex = store.users.findIndex((u) => u.id === session.user.id);
+    if (userIndex !== -1) {
+      if (data.name) store.users[userIndex].name = data.name;
+      if (data.first_name && data.last_name) store.users[userIndex].name = `${data.first_name} ${data.last_name}`;
+      if (data.email) store.users[userIndex].email = data.email;
+    }
+
+    if (session.client?.id) {
+      const clientIndex = store.clients.findIndex((c) => c.id === session.client!.id);
+      if (clientIndex !== -1) {
+        if (data.first_name) store.clients[clientIndex].firstName = data.first_name;
+        if (data.last_name) store.clients[clientIndex].lastName = data.last_name;
+        if (data.phone) store.clients[clientIndex].phone = data.phone;
+        if (data.address) store.clients[clientIndex].address = data.address;
+        if (data.date_of_birth) store.clients[clientIndex].dateOfBirth = data.date_of_birth;
+        if (data.dni) store.clients[clientIndex].dni = data.dni;
+        if (data.email) store.clients[clientIndex].email = data.email;
+      }
+    }
+
+    saveMockStore(store);
+    return this.getCurrentUser() as Promise<AuthSession>;
+  }
+
+  async changePassword(password: string): Promise<{ success: boolean; message: string }> {
+    await delay();
+    const sessionRaw = localStorage.getItem(SESSION_KEY);
+    if (!sessionRaw) throw createApiError('Unauthenticated', 401);
+
+    const session: AuthSession = JSON.parse(sessionRaw);
+    const store = getMockStore();
+    store.passwords[session.user.email] = password;
+    saveMockStore(store);
+
+    return { success: true, message: 'Password changed successfully' };
+  }
+
+  async updatePasswordWithToken(_token: string, _password: string): Promise<{ success: boolean; message: string }> {
+    await delay();
+    return { success: true, message: 'Password updated successfully. Please log in with your new password.' };
+  }
 }
