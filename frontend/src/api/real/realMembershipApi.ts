@@ -5,6 +5,9 @@ import { clientService } from '../index';
 
 export class RealMembershipApi implements IMembershipApi {
   private mapMembership(raw: any): Membership {
+    const fullName = raw.client_name ||
+      (raw.first_name || raw.last_name ? `${raw.first_name || ''} ${raw.last_name || ''}`.trim() : undefined);
+
     return {
       id: raw.id,
       clientId: raw.client_id || raw.clientId || '',
@@ -13,7 +16,9 @@ export class RealMembershipApi implements IMembershipApi {
       endDate: raw.end_date || raw.endDate || '',
       status: raw.status,
       planName: raw.plan_name || raw.planName || 'Membership Plan',
-      clientName: raw.client_name || (raw.first_name ? `${raw.first_name} ${raw.last_name}` : undefined),
+      clientName: fullName,
+      price: raw.price !== undefined ? Number(raw.price) : undefined,
+      dni: raw.dni || '',
     };
   }
 

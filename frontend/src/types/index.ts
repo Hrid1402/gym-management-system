@@ -53,6 +53,8 @@ export interface Membership {
   status: MembershipStatus;
   planName?: string;
   clientName?: string;
+  price?: number;
+  dni?: string;
 }
 
 export interface ApiError {

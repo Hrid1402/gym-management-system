@@ -24,6 +24,11 @@ export const AdminUsersPage: React.FC = () => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
+  // Filters State
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [roleFilter, setRoleFilter] = useState<string>('ALL');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -88,6 +93,17 @@ export const AdminUsersPage: React.FC = () => {
     }
   };
 
+  // Filter logic
+  const filteredUsers = users.filter((u) => {
+    const term = searchTerm.toLowerCase().trim();
+    const matchesSearch = !term || u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term);
+    const matchesRole = roleFilter === 'ALL' || u.role === roleFilter;
+    const matchesStatus = statusFilter === 'ALL' || (statusFilter === 'ACTIVE' ? u.isActive !== false : u.isActive === false);
+    return matchesSearch && matchesRole && matchesStatus;
+  });
+
+  const isFiltered = searchTerm.trim() !== '' || roleFilter !== 'ALL' || statusFilter !== 'ALL';
+
   if (loading) return <LoadingState message="Loading staff users..." />;
 
   return (
@@ -106,10 +122,67 @@ export const AdminUsersPage: React.FC = () => {
         }
       />
 
-      {users.length === 0 ? (
+      {/* Filter & Toolbar Header */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          {/* Result Counter Badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span
+              style={{
+                fontSize: '0.8125rem',
+                fontWeight: 700,
+                padding: '0.35rem 0.75rem',
+                borderRadius: '16px',
+                backgroundColor: isFiltered ? 'var(--color-primary-light, #e6f7ff)' : 'var(--color-neutral-200)',
+                color: isFiltered ? 'var(--color-primary, #1890ff)' : 'var(--color-neutral-700)',
+                border: isFiltered ? '1px solid #91d5ff' : '1px solid var(--color-neutral-300)',
+              }}
+            >
+              {filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'} {isFiltered ? `(filtered from ${users.length})` : 'total'}
+            </span>
+          </div>
+
+          {/* Filter Controls */}
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ width: '220px' }}>
+              <Input
+                placeholder="Search Name or Email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            <div style={{ width: '160px' }}>
+              <Select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                options={[
+                  { value: 'ALL', label: 'All Roles' },
+                  { value: 'RECEPTIONIST', label: 'Receptionist' },
+                  { value: 'ADMIN', label: 'Admin (Manager)' },
+                ]}
+              />
+            </div>
+
+            <div style={{ width: '150px' }}>
+              <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                options={[
+                  { value: 'ALL', label: 'All Statuses' },
+                  { value: 'ACTIVE', label: 'Active Users' },
+                  { value: 'INACTIVE', label: 'Inactive' },
+                ]}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {filteredUsers.length === 0 ? (
         <EmptyState
-          title="No staff users displayed"
-          description="There are currently no staff accounts registered."
+          title="No staff users found"
+          description="No staff accounts match your current filter criteria."
         />
       ) : (
         <div className="table-container">
@@ -125,7 +198,7 @@ export const AdminUsersPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => (
+              {filteredUsers.map((u) => (
                 <tr key={u.id}>
                   <td>
                     <strong style={{ color: 'var(--color-neutral-900)' }}>{u.name}</strong>

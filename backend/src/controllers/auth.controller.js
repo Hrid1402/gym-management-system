@@ -1,180 +1,185 @@
 import { pool } from '../db/index.js';
 import { supabase } from '../lib/supabaseClient.js';
+import 'dotenv/config';
 
-//login
+// --- EXISTING LOGIC ---
+
 export const login = async (req, res) => {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
-  }
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
   try {
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    if (authError) return res.status(401).json({ error: authError.message });
 
-    if (authError) {
-      return res.status(401).json({ error: authError.message });
-    }
-
-    const token = authData.session.access_token;
     const supabaseUserId = authData.user.id;
-    const clientResult = await pool.query(
-      'SELECT id, first_name, last_name FROM clients WHERE supabase_user_id = $1',
-      [supabaseUserId]
-    );
+    const token = authData.session.access_token;
 
+    const clientResult = await pool.query('SELECT * FROM clients WHERE supabase_user_id = $1', [supabaseUserId]);
     let userProfile = clientResult.rows[0];
     let userType = 'client';
 
     if (!userProfile) {
-      const staffResult = await pool.query(
-        'SELECT id, name, role, is_active FROM users WHERE supabase_user_id = $1',
-        [supabaseUserId]
-      );
-
+      const staffResult = await pool.query('SELECT * FROM users WHERE supabase_user_id = $1', [supabaseUserId]);
       userProfile = staffResult.rows[0];
       userType = 'staff';
-
       if (userProfile && !userProfile.is_active) {
-        return res.status(403).json({ error: 'This staff account has been deactivated' });
+        return res.status(403).json({ error: 'This account has been deactivated' });
       }
     }
 
-    if (!userProfile) {
-      return res.status(404).json({ error: 'Database profile missing for this account' });
-    }
+    if (!userProfile) return res.status(404).json({ error: 'Database profile missing' });
 
-    return res.status(200).json({
-      message: 'Login successful',
-      token,
-      user: { type: userType, ...userProfile },
-    });
+    return res.status(200).json({ message: 'Login successful', token, user: { type: userType, ...userProfile } });
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ error: 'An internal server error occurred during login' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-//register
 export const register = async (req, res) => {
   const { email, password, dni, first_name, last_name, phone } = req.body;
   const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
-
-  if (authError) {
-    return res.status(400).json({ error: authError.message });
-  }
+  if (authError) return res.status(400).json({ error: authError.message });
 
   const supabaseUserId = authData.user.id;
   const clientDbId = `CLI-${Date.now()}`;
 
   try {
     await pool.query(
-      `INSERT INTO clients
-        (id, supabase_user_id, dni, first_name, last_name, phone, email)
+      `INSERT INTO clients (id, supabase_user_id, dni, first_name, last_name, phone, email)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [clientDbId, supabaseUserId, dni, first_name, last_name, phone, email]
     );
-
-    return res.status(201).json({
-      message: 'Client registered successfully!',
-      client_id: clientDbId,
-    });
+    return res.status(201).json({ message: 'Client registered!', client_id: clientDbId });
   } catch (error) {
-    console.error('Failed to insert into Postgres:', error);
     await supabase.auth.admin.deleteUser(supabaseUserId);
-    return res.status(500).json({ error: 'Failed to create client profile in database.' });
+    return res.status(500).json({ error: 'Failed to create database profile' });
   }
 };
 
-//logout
 export const logout = async (req, res) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(400).json({ error: 'Missing or invalid token' });
-  }
-
-  const token = authHeader.split(' ')[1];
-
+  const token = req.headers.authorization.split(' ')[1];
   try {
     const { error } = await supabase.auth.admin.signOut(token);
-
-    if (error) {
-      return res.status(500).json({ error: 'Failed to sign out from the authentication server' });
-    }
-
-    return res.status(200).json({ message: 'Successfully logged out' });
+    if (error) return res.status(500).json({ error: 'Failed to sign out' });
+    return res.status(200).json({ message: 'Logged out successfully' });
   } catch (error) {
-    console.error('Logout error:', error);
-    return res.status(500).json({ error: 'An internal server error occurred during logout' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-//Password Recovery
 export const requestPasswordRecovery = async (req, res) => {
   const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
-  }
+  if (!email) return res.status(400).json({ error: 'Email is required' });
 
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      // Update this URL to match your actual frontend password reset page
-      redirectTo: 'http://localhost:3000/reset-password', 
+      redirectTo: `${(process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '')}/reset-password`,
     });
-
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    return res.status(200).json({ message: 'Password recovery email sent successfully' });
+    if (error) return res.status(400).json({ error: error.message });
+    return res.status(200).json({ message: 'Recovery email sent' });
   } catch (error) {
-    console.error('Password recovery error:', error);
-    return res.status(500).json({ error: 'An internal server error occurred' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-// Update Password (using the recovery token)
 export const updatePassword = async (req, res) => {
   const { new_password } = req.body;
   const authHeader = req.headers.authorization;
-
-  if (!new_password) {
-    return res.status(400).json({ error: 'New password is required' });
-  }
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Missing recovery token' });
-  }
-
-  const recoveryToken = authHeader.split(' ')[1];
+  if (!new_password) return res.status(400).json({ error: 'New password required' });
+  if (!authHeader) return res.status(401).json({ error: 'Missing token' });
 
   try {
     const { error } = await supabase.auth.updateUser(
       { password: new_password },
-      { accessToken: recoveryToken }
+      { accessToken: authHeader.split(' ')[1] }
     );
-
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
-
+    if (error) return res.status(400).json({ error: error.message });
     return res.status(200).json({ message: 'Password updated successfully' });
   } catch (error) {
-    console.error('Update password error:', error);
-    return res.status(500).json({ error: 'An internal server error occurred while updating the password' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-//Get current user
 export const getCurrentUser = (req, res) => {
-  res.json({
-    message: 'You have successfully accessed a secured route!',
-    timestamp: new Date().toISOString(),
-    currentUser: req.user,
-  });
+  res.json({ currentUser: req.user });
+};
+
+// --- NEW: SELF SERVICE LOGIC ---
+
+export const changePassword = async (req, res) => {
+  const { new_password } = req.body;
+  const token = req.headers.authorization.split(' ')[1];
+
+  if (!new_password) return res.status(400).json({ error: 'New password is required' });
+
+  try {
+    const { error } = await supabase.auth.updateUser({ password: new_password }, { accessToken: token });
+    if (error) return res.status(400).json({ error: error.message });
+    return res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  const { email } = req.body;
+  const token = req.headers.authorization.split(' ')[1];
+  const userId = req.user.id;
+  const userType = req.user.type;
+
+  try {
+    // 1. If email is being changed, update it in Supabase first
+    if (email && email !== req.user.email) {
+      const { error: authError } = await supabase.auth.updateUser({ email }, { accessToken: token });
+      if (authError) return res.status(400).json({ error: `Supabase Auth Error: ${authError.message}` });
+    }
+
+    // 2. Update local database based on user type
+    let updatedProfile;
+
+    if (userType === 'client') {
+      const { first_name, last_name, phone, address, date_of_birth, photo_path, dni } = req.body;
+      const result = await pool.query(
+        `UPDATE clients 
+         SET first_name = COALESCE($1, first_name),
+             last_name = COALESCE($2, last_name),
+             phone = COALESCE($3, phone),
+             address = COALESCE($4, address),
+             date_of_birth = COALESCE($5, date_of_birth),
+             photo_path = COALESCE($6, photo_path),
+             dni = COALESCE($7, dni),
+             email = COALESCE($8, email),
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = $9 RETURNING *`,
+        [first_name, last_name, phone, address, date_of_birth, photo_path, dni, email, userId]
+      );
+      updatedProfile = result.rows[0];
+    } else {
+      // Staff profile update
+      const { name } = req.body;
+      const result = await pool.query(
+        `UPDATE users 
+         SET name = COALESCE($1, name),
+             email = COALESCE($2, email),
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = $3 RETURNING *`,
+        [name, email, userId]
+      );
+      updatedProfile = result.rows[0];
+    }
+
+    return res.status(200).json({ 
+      message: 'Profile updated successfully', 
+      user: updatedProfile 
+    });
+
+  } catch (error) {
+    console.error('Update profile error:', error);
+    if (error.code === '23505') {
+      return res.status(400).json({ error: 'This Email or DNI is already in use by another account.' });
+    }
+    return res.status(500).json({ error: 'Internal server error updating profile' });
+  }
 };
