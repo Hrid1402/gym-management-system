@@ -11,7 +11,7 @@ app.use(express.json());
 app.use('/api', router);
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Gym' });
+  res.json({ message: 'Gym Online'});
 });
 
 app.get('/api/test-db', async (req, res) => {

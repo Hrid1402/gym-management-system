@@ -1,44 +1,49 @@
-import 'dotenv/config';
-import { pool } from './index.js';
+import { pool } from './index.js'; 
 
 const insertMockData = async () => {
   const client = await pool.connect();
   
   try {
-    console.log('Inserting mockup data...');
+    console.log('--- STARTING DATABASE SEED ---');
     await client.query('BEGIN');
 
-    // 1. Insert User
+    // 1. Insert Staff (Admin & Receptionist)
+    console.log('Inserting staff...');
     await client.query(`
       INSERT INTO users (id, supabase_user_id, name, email, role) 
       VALUES 
-        ('tz4a98xxre49x8jf98z12345', '550e8400-e29b-41d4-a716-446655440000', 'Admin User', 'admin@gym.com', 'ADMIN'),
-        ('tz4a98xxre49x8jf98z12346', '550e8400-e29b-41d4-a716-446655440001', 'Trainer John', 'john@gym.com', 'TRAINER');
+        ('USR-admin-001', '0ffe9f5f-c2a7-4d9d-bb92-21308fca2539', 'Admin User', 'admin@gmail.com', 'ADMIN'),
+        ('USR-recep-002', '5bdb9837-e91a-4751-96ed-ce3f30bb6f49', 'Front Desk', 'recepcion@gmail.com', 'RECEPTIONIST');
     `);
 
     // 2. Insert Client
+    console.log('Inserting clients...');
     await client.query(`
       INSERT INTO clients (id, supabase_user_id, dni, first_name, last_name, phone, email, date_of_birth)
       VALUES 
-        ('client98xxre49x8jf98z111', '550e8400-e29b-41d4-a716-446655440002', '12345678', 'Jane', 'Doe', '555-0198', 'jane.client@example.com', '1990-05-15');
+        ('CLI-cliente-001', '7da72d76-4368-475a-b363-3f3610e38b60', '72345678', 'Carlos', 'Mendoza', '987654321', 'cliente@gmail.com', '1995-03-20');
     `);
 
-    // 3. Insert Membership Plan
+    // 3. Insert Membership Plans (Requirement 4 mock data)
+    console.log('Inserting membership plans...');
     await client.query(`
       INSERT INTO membership_plans (id, name, price, duration_days)
       VALUES 
-        ('plan98xxre49x8jf98z222', 'Monthly Premium', 49.99, 30),
-        ('plan98xxre49x8jf98z333', 'Annual Basic', 399.99, 365);
+        ('PLN-weekly-001', 'Pase Semanal', 20.00, 7),
+        ('PLN-monthly-002', 'Mensualidad Básica', 60.00, 30),
+        ('PLN-trimestral-003', 'Plan Trimestral', 160.00, 90),
+        ('PLN-annual-004', 'Membresía VIP Anual', 600.00, 365);
     `);
 
-    // 4. Insert Membership
+    // 4. Insert Membership (Requirement 5 mock data)
+    console.log('Assigning plans to clients...');
     await client.query(`
       INSERT INTO memberships (id, client_id, plan_id, start_date, end_date, status)
       VALUES 
         (
-          'memb98xxre49x8jf98z444', 
-          'client98xxre49x8jf98z111', 
-          'plan98xxre49x8jf98z222', 
+          'MEM-carlos-001', 
+          'CLI-cliente-001', 
+          'PLN-monthly-002', 
           CURRENT_DATE, 
           CURRENT_DATE + INTERVAL '30 days', 
           'ACTIVE'
@@ -46,10 +51,15 @@ const insertMockData = async () => {
     `);
 
     await client.query('COMMIT');
-    console.log('Mockup data inserted successfully.');
+    console.log('\n✅ MOCKUP DATA INSERTED SUCCESSFULLY.');
+    console.log('You can now log in using the passwords you set for:');
+    console.log('- admin@gmail.com');
+    console.log('- recepcion@gmail.com');
+    console.log('- cliente@gmail.com');
+    
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error inserting mockup data:', error);
+    console.error('\n❌ Error inserting mockup data:', error);
     process.exit(1);
   } finally {
     client.release();
