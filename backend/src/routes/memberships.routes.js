@@ -23,6 +23,6 @@ router.post('/web-register', (req, res, next) => {
 router.get('/', getMemberships);
 
 // NEW: Cancel membership route
-router.patch('/:id/cancel', cancelMembership);
+router.patch('/cancel', cancelMembership);
 
 export default router;

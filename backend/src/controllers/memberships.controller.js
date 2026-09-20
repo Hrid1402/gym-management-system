@@ -77,40 +77,53 @@ export const registerMembershipClient = async (req, res) => {
   }
 };
 
-// 3. View Memberships (Keep your existing getMemberships function here)
+// 3. View Memberships
 export const getMemberships = async (req, res) => {
-  // ... (Your existing code)
+  try {
+    let query = `
+      SELECT m.id, m.start_date, m.end_date, m.status, 
+             p.name AS plan_name, p.price, 
+             c.first_name, c.last_name, c.dni
+      FROM memberships m
+      JOIN membership_plans p ON m.plan_id = p.id
+      JOIN clients c ON m.client_id = c.id
+    `;
+    let values = [];
+
+    // If the user is a client, ONLY return their own memberships
+    if (req.user.type === 'client') {
+      query += ' WHERE m.client_id = $1';
+      values.push(req.user.id);
+    }
+
+    query += ' ORDER BY m.created_at DESC';
+
+    const result = await pool.query(query, values);
+    return res.status(200).json(result.rows);
+  } catch (error) {
+    console.error('Error fetching memberships:', error);
+    return res.status(500).json({ error: 'Internal server error fetching memberships' });
+  }
 };
 
-// 4. NEW: Cancel Membership
+// 4. Cancel Membership
 export const cancelMembership = async (req, res) => {
-  const { id } = req.params;
+  const clientId = req.user.id; // Extracted safely from their token
 
   try {
-    // First, find the membership to verify ownership
-    const memResult = await pool.query('SELECT client_id, status FROM memberships WHERE id = $1', [id]);
-    
-    if (memResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Membership not found' });
-    }
-
-    const membership = memResult.rows[0];
-
-    // Security Check: If it's a client, ensure they own this specific membership
-    if (req.user.type === 'client' && membership.client_id !== req.user.id) {
-      return res.status(403).json({ error: 'You do not have permission to cancel this membership' });
-    }
-
-    // Logic Check: Don't cancel an already cancelled or expired membership
-    if (membership.status === 'CANCELLED' || membership.status === 'EXPIRED') {
-      return res.status(400).json({ error: `Membership is already ${membership.status.toLowerCase()}` });
-    }
-
-    // Update the status
+    // Attempt to cancel any currently active or pending membership for this user
     const updateResult = await pool.query(
-      `UPDATE memberships SET status = 'CANCELLED', updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *`,
-      [id]
+      `UPDATE memberships 
+       SET status = 'CANCELLED', updated_at = CURRENT_TIMESTAMP 
+       WHERE client_id = $1 AND status IN ('ACTIVE', 'PENDING') 
+       RETURNING *`,
+      [clientId]
     );
+
+    // If no rows were updated, they didn't have an active membership
+    if (updateResult.rows.length === 0) {
+      return res.status(404).json({ error: 'You do not have an active membership to cancel.' });
+    }
 
     return res.status(200).json({
       message: 'Membership cancelled successfully',

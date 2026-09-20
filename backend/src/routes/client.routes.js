@@ -6,9 +6,9 @@ const router = Router();
 
 router.use(requireAuth);
 
-router.get('/', requireRole('ADMIN, RECEPTIONIST'), getClients);
-router.get('/:id', requireRole('ADMIN, RECEPTIONIST'), getClientById);
-router.put('/:id', requireRole('ADMIN, RECEPTIONIST'), updateClient);
-router.delete('/:id', requireRole('ADMIN, RECEPTIONIST'), deleteClient);
+router.get('/', requireRole(['ADMIN', 'RECEPTIONIST']), getClients);
+router.get('/:id', requireRole(['ADMIN', 'RECEPTIONIST']), getClientById);
+router.put('/:id', requireRole(['ADMIN', 'RECEPTIONIST']), updateClient);
+router.delete('/:id', requireRole(['ADMIN', 'RECEPTIONIST']), deleteClient);
 
 export default router;

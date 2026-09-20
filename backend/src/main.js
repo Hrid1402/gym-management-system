@@ -1,10 +1,19 @@
 import 'dotenv/config';
 import express from 'express';
-import { pool } from './db/index.js'; // Named import matching the export
+import cors from 'cors';
+import { pool } from './db/index.js';
 import router from './routes/index.js';
+
+
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 
