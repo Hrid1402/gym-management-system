@@ -108,7 +108,9 @@ export class RealAuthApi implements IAuthApi {
   }
 
   async registerClient(data: RegisterClientInput): Promise<AuthSession> {
-    await apiClient.post<{ message: string; client_id: string }>('auth/register', {
+    const existingToken = getCookie(COOKIE_AUTH_TOKEN);
+
+    const res = await apiClient.post<{ message: string; client_id?: string; id?: string }>('auth/register', {
       email: data.email,
       password: data.password,
       dni: data.dni,
@@ -117,8 +119,29 @@ export class RealAuthApi implements IAuthApi {
       phone: data.phone,
     });
 
-    // Auto-login after registration
-    return this.login({ email: data.email, password: data.password });
+    // Auto-login after registration only if no active session cookie exists (public self-registration)
+    if (!existingToken) {
+      return this.login({ email: data.email, password: data.password });
+    }
+
+    const createdId = res.client_id || res.id || '';
+    return {
+      user: {
+        id: createdId,
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        role: 'CLIENT',
+        isActive: true,
+      },
+      client: {
+        id: createdId,
+        dni: data.dni,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        email: data.email,
+      },
+    };
   }
 
   async updateProfile(data: any): Promise<AuthSession> {

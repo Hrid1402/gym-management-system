@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../../api';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { KeyRound, CheckCircle, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { validatePassword, validateConfirmPassword } from '../../utils/validators';
 
 export const ResetPasswordPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export const ResetPasswordPage: React.FC = () => {
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [pwdTouched, setPwdTouched] = useState({ password: false, confirmPassword: false });
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -40,22 +42,24 @@ export const ResetPasswordPage: React.FC = () => {
     setToken(null);
   }, []);
 
+  const errors = useMemo(() => {
+    return {
+      password: validatePassword(password),
+      confirmPassword: validateConfirmPassword(password, confirmPassword),
+    };
+  }, [password, confirmPassword]);
+
+  const isValid = !errors.password && !errors.confirmPassword;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPwdTouched({ password: true, confirmPassword: true });
     if (!token) {
       setErrorMsg('Falta el token de autorización de recuperación.');
       return;
     }
 
-    if (password.length < 6) {
-      setErrorMsg('La contraseña debe tener al menos 6 caracteres.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setErrorMsg('Las contraseñas no coinciden.');
-      return;
-    }
+    if (!isValid) return;
 
     setLoading(true);
     setErrorMsg(null);
@@ -134,7 +138,11 @@ export const ResetPasswordPage: React.FC = () => {
           type="password"
           placeholder="Mínimo 6 caracteres"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setPwdTouched((prev) => ({ ...prev, password: true }));
+          }}
+          error={pwdTouched.password ? errors.password || undefined : undefined}
           required
         />
 
@@ -143,11 +151,15 @@ export const ResetPasswordPage: React.FC = () => {
           type="password"
           placeholder="Vuelve a ingresar la contraseña"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={(e) => {
+            setConfirmPassword(e.target.value);
+            setPwdTouched((prev) => ({ ...prev, confirmPassword: true }));
+          }}
+          error={pwdTouched.confirmPassword ? errors.confirmPassword || undefined : undefined}
           required
         />
 
-        <Button type="submit" variant="primary" fullWidth isLoading={loading} style={{ marginTop: '0.5rem' }}>
+        <Button type="submit" variant="primary" fullWidth isLoading={loading} disabled={!isValid || loading} style={{ marginTop: '0.5rem' }}>
           Actualizar Contraseña
         </Button>
       </form>

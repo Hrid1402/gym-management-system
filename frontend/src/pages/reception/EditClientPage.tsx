@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { clientService } from '../../api';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -9,10 +9,26 @@ import { LoadingState } from '../../components/ui/LoadingState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { ArrowLeft } from 'lucide-react';
 import { formatDateForInput } from '../../utils/dateUtils';
+import {
+  validateName,
+  validateDni,
+  validatePhone,
+  validateEmail,
+} from '../../utils/validators';
 
 export const EditClientPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  const [initialData, setInitialData] = useState({
+    firstName: '',
+    lastName: '',
+    dni: '',
+    phone: '',
+    email: '',
+    dateOfBirth: '',
+    address: '',
+  });
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -24,6 +40,7 @@ export const EditClientPage: React.FC = () => {
     address: '',
   });
 
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -34,7 +51,7 @@ export const EditClientPage: React.FC = () => {
     setErrorMsg(null);
     try {
       const client = await clientService.getClient(id);
-      setFormData({
+      const data = {
         firstName: client.firstName || '',
         lastName: client.lastName || '',
         dni: client.dni || '',
@@ -42,7 +59,9 @@ export const EditClientPage: React.FC = () => {
         email: client.email || '',
         dateOfBirth: formatDateForInput(client.dateOfBirth),
         address: client.address || '',
-      });
+      };
+      setInitialData(data);
+      setFormData(data);
     } catch (err: any) {
       setErrorMsg(err.message || 'Error al cargar los datos del cliente');
     } finally {
@@ -54,13 +73,36 @@ export const EditClientPage: React.FC = () => {
     fetchClient();
   }, [fetchClient]);
 
+  const fieldErrors = useMemo(() => {
+    return {
+      firstName: validateName(formData.firstName, 'El nombre'),
+      lastName: validateName(formData.lastName, 'El apellido'),
+      dni: validateDni(formData.dni),
+      phone: validatePhone(formData.phone),
+      email: validateEmail(formData.email),
+    };
+  }, [formData]);
+
+  const isValid = useMemo(() => {
+    return !Object.values(fieldErrors).some((err) => err !== null);
+  }, [fieldErrors]);
+
+  const isDirty = useMemo(() => {
+    return JSON.stringify(formData) !== JSON.stringify(initialData);
+  }, [formData, initialData]);
+
+  const isSaveDisabled = !isDirty || !isValid || submitting;
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setErrorMsg(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!id) return;
+    if (!id || isSaveDisabled) return;
 
     setSubmitting(true);
     setErrorMsg(null);
@@ -102,6 +144,7 @@ export const EditClientPage: React.FC = () => {
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
+                error={touched.firstName ? fieldErrors.firstName || undefined : undefined}
                 required
               />
               <Input
@@ -109,6 +152,7 @@ export const EditClientPage: React.FC = () => {
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
+                error={touched.lastName ? fieldErrors.lastName || undefined : undefined}
                 required
               />
             </div>
@@ -118,6 +162,7 @@ export const EditClientPage: React.FC = () => {
               name="dni"
               value={formData.dni}
               onChange={handleChange}
+              error={touched.dni ? fieldErrors.dni || undefined : undefined}
               required
             />
 
@@ -126,6 +171,7 @@ export const EditClientPage: React.FC = () => {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
+              error={touched.phone ? fieldErrors.phone || undefined : undefined}
               required
             />
 
@@ -135,6 +181,8 @@ export const EditClientPage: React.FC = () => {
               type="email"
               value={formData.email}
               onChange={handleChange}
+              error={touched.email ? fieldErrors.email || undefined : undefined}
+              required
             />
 
             <Input
@@ -156,7 +204,7 @@ export const EditClientPage: React.FC = () => {
               <Button type="button" variant="secondary" onClick={() => navigate(`/reception/clients/${id}`)}>
                 Cancelar
               </Button>
-              <Button type="submit" variant="primary" isLoading={submitting}>
+              <Button type="submit" variant="primary" isLoading={submitting} disabled={isSaveDisabled}>
                 Guardar Cambios
               </Button>
             </div>

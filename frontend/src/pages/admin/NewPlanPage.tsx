@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { planService } from '../../api';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -6,6 +6,7 @@ import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { ArrowLeft } from 'lucide-react';
+import { validateName, validatePrice, validateDurationDays } from '../../utils/validators';
 
 export const NewPlanPage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,26 +14,26 @@ export const NewPlanPage: React.FC = () => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState<number | ''>('');
   const [durationDays, setDurationDays] = useState<number | ''>('');
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const errors = useMemo(() => {
+    return {
+      name: validateName(name, 'El nombre del plan'),
+      price: validatePrice(price),
+      durationDays: validateDurationDays(durationDays),
+    };
+  }, [name, price, durationDays]);
+
+  const isValid = !errors.name && !errors.price && !errors.durationDays;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || price === '' || durationDays === '') {
-      setErrorMsg('Por favor completa todos los campos.');
-      return;
-    }
+    setTouched({ name: true, price: true, durationDays: true });
 
-    if (Number(price) <= 0) {
-      setErrorMsg('El precio debe ser un valor mayor a cero.');
-      return;
-    }
-
-    if (Number(durationDays) <= 0) {
-      setErrorMsg('La duración debe ser al menos de 1 día.');
-      return;
-    }
+    if (!isValid) return;
 
     setLoading(true);
     setErrorMsg(null);
@@ -70,7 +71,11 @@ export const NewPlanPage: React.FC = () => {
               label="Nombre del Plan"
               placeholder="Ej: Plan Mensual VIP"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                setTouched((prev) => ({ ...prev, name: true }));
+              }}
+              error={touched.name ? errors.name || undefined : undefined}
               required
             />
 
@@ -81,7 +86,11 @@ export const NewPlanPage: React.FC = () => {
               step="0.01"
               placeholder="Ej: 35.00"
               value={price}
-              onChange={(e) => setPrice(e.target.value ? Number(e.target.value) : '')}
+              onChange={(e) => {
+                setPrice(e.target.value ? Number(e.target.value) : '');
+                setTouched((prev) => ({ ...prev, price: true }));
+              }}
+              error={touched.price ? errors.price || undefined : undefined}
               required
             />
 
@@ -91,7 +100,11 @@ export const NewPlanPage: React.FC = () => {
               min="1"
               placeholder="Ej: 30"
               value={durationDays}
-              onChange={(e) => setDurationDays(e.target.value ? Number(e.target.value) : '')}
+              onChange={(e) => {
+                setDurationDays(e.target.value ? Number(e.target.value) : '');
+                setTouched((prev) => ({ ...prev, durationDays: true }));
+              }}
+              error={touched.durationDays ? errors.durationDays || undefined : undefined}
               required
             />
 
@@ -99,7 +112,7 @@ export const NewPlanPage: React.FC = () => {
               <Button type="button" variant="secondary" onClick={() => navigate('/admin/plans')}>
                 Cancelar
               </Button>
-              <Button type="submit" variant="primary" isLoading={loading}>
+              <Button type="submit" variant="primary" isLoading={loading} disabled={!isValid || loading}>
                 Crear Plan
               </Button>
             </div>

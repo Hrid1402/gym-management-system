@@ -134,10 +134,25 @@ export class MockAuthApi implements IAuthApi {
     store.clients.push(newClient);
     store.passwords[email] = data.password;
 
-    saveMockStore(store);
+    const sessionRaw = localStorage.getItem(SESSION_KEY);
+    let isStaffSession = false;
+    if (sessionRaw) {
+      try {
+        const currentSession: AuthSession = JSON.parse(sessionRaw);
+        if (currentSession.user && (currentSession.user.role === 'ADMIN' || currentSession.user.role === 'RECEPTIONIST')) {
+          isStaffSession = true;
+        }
+      } catch {
+        // ignore
+      }
+    }
 
     const session: AuthSession = { user: newUser, client: newClient };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    
+    // Only update active session in localStorage if not registered by a logged-in staff member
+    if (!isStaffSession) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    }
 
     return session;
   }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService, planService, membershipService } from '../../api';
 import { MembershipPlan } from '../../types';
@@ -8,6 +8,13 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { getTodayString } from '../../api/mock/mockStore';
+import {
+  validateName,
+  validateDni,
+  validatePhone,
+  validateEmail,
+  validatePassword,
+} from '../../utils/validators';
 
 export const NewClientPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +28,7 @@ export const NewClientPage: React.FC = () => {
     accountPassword: '',
   });
 
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [hasInitialMembership, setHasInitialMembership] = useState<boolean>(false);
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [initialPlanId, setInitialPlanId] = useState<string>('');
@@ -44,16 +52,40 @@ export const NewClientPage: React.FC = () => {
     fetchActivePlans();
   }, []);
 
+  const fieldErrors = useMemo(() => {
+    return {
+      firstName: validateName(formData.firstName, 'El nombre'),
+      lastName: validateName(formData.lastName, 'El apellido'),
+      dni: validateDni(formData.dni),
+      phone: validatePhone(formData.phone),
+      email: validateEmail(formData.email),
+      accountPassword: formData.accountPassword ? validatePassword(formData.accountPassword) : null,
+    };
+  }, [formData]);
+
+  const isValid = useMemo(() => {
+    return !Object.values(fieldErrors).some((err) => err !== null);
+  }, [fieldErrors]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setErrorMsg(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.firstName || !formData.lastName || !formData.dni || !formData.phone || !formData.email) {
-      setErrorMsg('Por favor completa todos los datos requeridos del cliente.');
-      return;
-    }
+    setTouched({
+      firstName: true,
+      lastName: true,
+      dni: true,
+      phone: true,
+      email: true,
+      accountPassword: true,
+    });
+
+    if (!isValid) return;
 
     setLoading(true);
     setErrorMsg(null);
@@ -114,6 +146,7 @@ export const NewClientPage: React.FC = () => {
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
+                error={touched.firstName ? fieldErrors.firstName || undefined : undefined}
                 required
               />
               <Input
@@ -121,6 +154,7 @@ export const NewClientPage: React.FC = () => {
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
+                error={touched.lastName ? fieldErrors.lastName || undefined : undefined}
                 required
               />
             </div>
@@ -130,6 +164,7 @@ export const NewClientPage: React.FC = () => {
               name="dni"
               value={formData.dni}
               onChange={handleChange}
+              error={touched.dni ? fieldErrors.dni || undefined : undefined}
               required
             />
 
@@ -138,6 +173,7 @@ export const NewClientPage: React.FC = () => {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
+              error={touched.phone ? fieldErrors.phone || undefined : undefined}
               required
             />
 
@@ -147,6 +183,7 @@ export const NewClientPage: React.FC = () => {
               type="email"
               value={formData.email}
               onChange={handleChange}
+              error={touched.email ? fieldErrors.email || undefined : undefined}
               required
             />
 
@@ -157,6 +194,7 @@ export const NewClientPage: React.FC = () => {
               placeholder="Por defecto 'temp1234' si se deja en blanco"
               value={formData.accountPassword}
               onChange={handleChange}
+              error={touched.accountPassword ? fieldErrors.accountPassword || undefined : undefined}
               helperText="El cliente podrá usar esta contraseña para iniciar sesión"
             />
 
@@ -203,7 +241,7 @@ export const NewClientPage: React.FC = () => {
             )}
 
             <div style={{ marginTop: '1.5rem' }}>
-              <Button type="submit" variant="primary" fullWidth isLoading={loading}>
+              <Button type="submit" variant="primary" fullWidth isLoading={loading} disabled={!isValid || loading}>
                 Registrar Cuenta de Cliente
               </Button>
             </div>

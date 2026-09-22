@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { userService } from '../../api';
 import { User, UserRole } from '../../types';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -11,6 +11,7 @@ import { LoadingState } from '../../components/ui/LoadingState';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { CheckCircle, XCircle, UserPlus, Info } from 'lucide-react';
 import { formatDateForDisplay } from '../../utils/dateUtils';
+import { validateName, validateEmail, validatePassword } from '../../utils/validators';
 
 export const AdminUsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -23,6 +24,7 @@ export const AdminUsersPage: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [role, setRole] = useState<UserRole>('RECEPTIONIST');
+  const [modalTouched, setModalTouched] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -47,16 +49,21 @@ export const AdminUsersPage: React.FC = () => {
     fetchUsers();
   }, [fetchUsers]);
 
+  const modalErrors = useMemo(() => {
+    return {
+      name: validateName(name, 'El nombre'),
+      email: validateEmail(email),
+      password: validatePassword(password),
+    };
+  }, [name, email, password]);
+
+  const isModalValid = !modalErrors.name && !modalErrors.email && !modalErrors.password;
+
   const handleCreateStaff = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !password) {
-      setCreateError('Por favor completa todos los campos requeridos.');
-      return;
-    }
-    if (password.length < 6) {
-      setCreateError('La contraseña debe tener al menos 6 caracteres.');
-      return;
-    }
+    setModalTouched({ name: true, email: true, password: true });
+
+    if (!isModalValid) return;
 
     setSubmitting(true);
     setCreateError(null);
@@ -73,6 +80,7 @@ export const AdminUsersPage: React.FC = () => {
       setEmail('');
       setPassword('');
       setRole('RECEPTIONIST');
+      setModalTouched({});
       await fetchUsers();
     } catch (err: any) {
       setCreateError(err.message || 'Error al crear la cuenta del personal');
@@ -126,7 +134,11 @@ export const AdminUsersPage: React.FC = () => {
           <Button
             variant="primary"
             icon={<UserPlus size={16} />}
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => {
+              setModalTouched({});
+              setCreateError(null);
+              setShowCreateModal(true);
+            }}
           >
             Registrar Personal
           </Button>
@@ -384,7 +396,11 @@ export const AdminUsersPage: React.FC = () => {
           <Input
             label="Nombre Completo *"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              setModalTouched((prev) => ({ ...prev, name: true }));
+            }}
+            error={modalTouched.name ? modalErrors.name || undefined : undefined}
             placeholder="Ej: María González"
             required
           />
@@ -393,7 +409,11 @@ export const AdminUsersPage: React.FC = () => {
             label="Correo Electrónico *"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setModalTouched((prev) => ({ ...prev, email: true }));
+            }}
+            error={modalTouched.email ? modalErrors.email || undefined : undefined}
             placeholder="Ej: maria@gimnasio.com"
             required
           />
@@ -402,7 +422,11 @@ export const AdminUsersPage: React.FC = () => {
             label="Contraseña Inicial *"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setModalTouched((prev) => ({ ...prev, password: true }));
+            }}
+            error={modalTouched.password ? modalErrors.password || undefined : undefined}
             placeholder="Mínimo 6 caracteres"
             required
           />
@@ -427,7 +451,7 @@ export const AdminUsersPage: React.FC = () => {
             >
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" isLoading={submitting}>
+            <Button type="submit" variant="primary" isLoading={submitting} disabled={!isModalValid || submitting}>
               Crear Cuenta de Personal
             </Button>
           </div>

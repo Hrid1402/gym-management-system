@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card } from '../../components/ui/Card';
@@ -7,12 +7,20 @@ import { Button } from '../../components/ui/Button';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { UserCheck, KeyRound, CheckCircle, AlertCircle } from 'lucide-react';
 import { ROLE_LABELS } from '../../config/appConfig';
+import {
+  validateName,
+  validateEmail,
+  validatePassword,
+  validateConfirmPassword,
+} from '../../utils/validators';
 
 export const StaffProfilePage: React.FC = () => {
   const { user, isLoading, updateProfile, changePassword } = useAuth();
 
-  const [name, setName] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
+  const [initialData, setInitialData] = useState({ name: '', email: '' });
+  const [formData, setFormData] = useState({ name: '', email: '' });
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
   const [savingProfile, setSavingProfile] = useState<boolean>(false);
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -20,32 +28,72 @@ export const StaffProfilePage: React.FC = () => {
   // Change Password state
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [pwdTouched, setPwdTouched] = useState({ newPassword: false, confirmPassword: false });
   const [changingPassword, setChangingPassword] = useState<boolean>(false);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
-      setName(user.name || '');
-      setEmail(user.email || '');
+      const data = {
+        name: user.name || '',
+        email: user.email || '',
+      };
+      setInitialData(data);
+      setFormData(data);
     }
   }, [user]);
+
+  // Real-time field validation for profile form
+  const fieldErrors = useMemo(() => {
+    return {
+      name: validateName(formData.name, 'El nombre'),
+      email: validateEmail(formData.email),
+    };
+  }, [formData]);
+
+  const isProfileValid = !fieldErrors.name && !fieldErrors.email;
+  const isProfileDirty = JSON.stringify(formData) !== JSON.stringify(initialData);
+  const isProfileSaveDisabled = !isProfileDirty || !isProfileValid || savingProfile;
+
+  // Real-time field validation for password form
+  const passwordErrors = useMemo(() => {
+    return {
+      newPassword: validatePassword(newPassword),
+      confirmPassword: validateConfirmPassword(newPassword, confirmPassword),
+    };
+  }, [newPassword, confirmPassword]);
+
+  const isPasswordValid = !passwordErrors.newPassword && !passwordErrors.confirmPassword;
+  const isPasswordDirty = newPassword.length > 0 || confirmPassword.length > 0;
+  const isPasswordSaveDisabled = !isPasswordDirty || !isPasswordValid || changingPassword;
 
   if (isLoading) {
     return <LoadingState message="Cargando configuración de la cuenta..." />;
   }
 
+  const handleChangeField = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    setProfileSuccess(null);
+    setProfileError(null);
+  };
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isProfileSaveDisabled) return;
+
     setSavingProfile(true);
     setProfileError(null);
     setProfileSuccess(null);
 
     try {
       await updateProfile({
-        name,
-        email,
+        name: formData.name,
+        email: formData.email,
       });
+      setInitialData(formData);
+      setTouched({});
       setProfileSuccess('¡Datos de la cuenta actualizados exitosamente!');
     } catch (err: any) {
       setProfileError(err.message || 'Error al actualizar los datos del perfil');
@@ -56,14 +104,7 @@ export const StaffProfilePage: React.FC = () => {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword.length < 6) {
-      setPasswordError('La contraseña debe tener al menos 6 caracteres.');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordError('Las contraseñas no coinciden.');
-      return;
-    }
+    if (isPasswordSaveDisabled) return;
 
     setChangingPassword(true);
     setPasswordError(null);
@@ -74,6 +115,7 @@ export const StaffProfilePage: React.FC = () => {
       setPasswordSuccess('¡Contraseña actualizada exitosamente!');
       setNewPassword('');
       setConfirmPassword('');
+      setPwdTouched({ newPassword: false, confirmPassword: false });
     } catch (err: any) {
       setPasswordError(err.message || 'Error al cambiar la contraseña');
     } finally {
@@ -153,21 +195,23 @@ export const StaffProfilePage: React.FC = () => {
           <form onSubmit={handleSaveProfile}>
             <Input
               label="Nombre Completo"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={formData.name}
+              onChange={(e) => handleChangeField('name', e.target.value)}
+              error={touched.name ? fieldErrors.name || undefined : undefined}
               required
             />
 
             <Input
               label="Correo Electrónico"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={(e) => handleChangeField('email', e.target.value)}
+              error={touched.email ? fieldErrors.email || undefined : undefined}
               required
             />
 
             <div style={{ marginTop: '1.25rem' }}>
-              <Button type="submit" variant="primary" isLoading={savingProfile}>
+              <Button type="submit" variant="primary" isLoading={savingProfile} disabled={isProfileSaveDisabled}>
                 Guardar Cambios
               </Button>
             </div>
@@ -229,7 +273,11 @@ export const StaffProfilePage: React.FC = () => {
               type="password"
               placeholder="Mínimo 6 caracteres"
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={(e) => {
+                setNewPassword(e.target.value);
+                setPwdTouched((prev) => ({ ...prev, newPassword: true }));
+              }}
+              error={pwdTouched.newPassword ? passwordErrors.newPassword || undefined : undefined}
               required
             />
 
@@ -238,12 +286,16 @@ export const StaffProfilePage: React.FC = () => {
               type="password"
               placeholder="Vuelve a ingresar la contraseña"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                setPwdTouched((prev) => ({ ...prev, confirmPassword: true }));
+              }}
+              error={pwdTouched.confirmPassword ? passwordErrors.confirmPassword || undefined : undefined}
               required
             />
 
             <div style={{ marginTop: '1.25rem' }}>
-              <Button type="submit" variant="secondary" isLoading={changingPassword}>
+              <Button type="submit" variant="secondary" isLoading={changingPassword} disabled={isPasswordSaveDisabled}>
                 Actualizar Contraseña
               </Button>
             </div>

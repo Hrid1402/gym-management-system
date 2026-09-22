@@ -163,13 +163,18 @@ a:hover {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
-.form-control:disabled {
-  background-color: var(--color-neutral-100);
-  cursor: not-allowed;
+.form-control.border-danger {
+  border-color: var(--color-danger);
+}
+.form-control.border-danger:focus {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
 }
 .form-error {
   font-size: 0.75rem;
   color: var(--color-danger);
+  margin-top: 0.25rem;
+  display: block;
 }
 
 /* Card Component */

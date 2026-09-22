@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { clientService, planService, membershipService } from '../../api';
 import { Client, MembershipPlan, Membership } from '../../types';
@@ -61,20 +61,16 @@ export const NewMembershipPage: React.FC = () => {
     fetchData();
   }, [fetchData]);
 
+  const isValid = useMemo(() => {
+    return Boolean(selectedClientId && selectedPlanId && startDate);
+  }, [selectedClientId, selectedPlanId, startDate]);
+
   if (loading) return <LoadingState message="Cargando formulario de registro de membresía..." />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedClientId) {
-      setErrorMsg('Por favor selecciona un cliente existente');
-      return;
-    }
-    if (!selectedPlanId) {
-      setErrorMsg('Por favor selecciona un plan de membresía');
-      return;
-    }
-    if (!startDate) {
-      setErrorMsg('Por favor selecciona una fecha de inicio');
+    if (!isValid) {
+      setErrorMsg('Por favor completa todos los campos obligatorios del formulario.');
       return;
     }
 
@@ -194,7 +190,7 @@ export const NewMembershipPage: React.FC = () => {
             />
 
             <div style={{ marginTop: '1.5rem' }}>
-              <Button type="submit" variant="primary" fullWidth isLoading={submitting}>
+              <Button type="submit" variant="primary" fullWidth isLoading={submitting} disabled={!isValid || submitting}>
                 Registrar Membresía para Cliente
               </Button>
             </div>

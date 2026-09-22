@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import {
+  validateName,
+  validateDni,
+  validatePhone,
+  validateEmail,
+  validatePassword,
+} from '../../utils/validators';
 
 export const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -16,27 +23,49 @@ export const RegisterPage: React.FC = () => {
     address: '',
   });
 
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const { registerClient } = useAuth();
   const navigate = useNavigate();
 
+  const fieldErrors = useMemo(() => {
+    return {
+      firstName: validateName(formData.firstName, 'El nombre'),
+      lastName: validateName(formData.lastName, 'El apellido'),
+      dni: validateDni(formData.dni),
+      phone: validatePhone(formData.phone),
+      email: validateEmail(formData.email),
+      password: validatePassword(formData.password),
+    };
+  }, [formData]);
+
+  const isValid = useMemo(() => {
+    return !Object.values(fieldErrors).some((err) => err !== null);
+  }, [fieldErrors]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.firstName || !formData.lastName || !formData.dni || !formData.email || !formData.password || !formData.phone) {
-      setError('Por favor completa todos los campos requeridos.');
-      return;
-    }
+    
+    // Touch all required fields on submit attempt
+    setTouched({
+      firstName: true,
+      lastName: true,
+      dni: true,
+      phone: true,
+      email: true,
+      password: true,
+    });
 
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
-      return;
-    }
+    if (!isValid) return;
 
     setError(null);
     setLoading(true);
@@ -70,6 +99,7 @@ export const RegisterPage: React.FC = () => {
             placeholder="Juan"
             value={formData.firstName}
             onChange={handleChange}
+            error={touched.firstName ? fieldErrors.firstName || undefined : undefined}
             required
           />
           <Input
@@ -78,6 +108,7 @@ export const RegisterPage: React.FC = () => {
             placeholder="Pérez"
             value={formData.lastName}
             onChange={handleChange}
+            error={touched.lastName ? fieldErrors.lastName || undefined : undefined}
             required
           />
         </div>
@@ -88,6 +119,7 @@ export const RegisterPage: React.FC = () => {
           placeholder="Ej: 12345678A"
           value={formData.dni}
           onChange={handleChange}
+          error={touched.dni ? fieldErrors.dni || undefined : undefined}
           required
         />
 
@@ -98,6 +130,7 @@ export const RegisterPage: React.FC = () => {
           placeholder="+54 9 11 1234-5678"
           value={formData.phone}
           onChange={handleChange}
+          error={touched.phone ? fieldErrors.phone || undefined : undefined}
           required
         />
 
@@ -108,6 +141,7 @@ export const RegisterPage: React.FC = () => {
           placeholder="juan.perez@ejemplo.com"
           value={formData.email}
           onChange={handleChange}
+          error={touched.email ? fieldErrors.email || undefined : undefined}
           required
         />
 
@@ -118,6 +152,7 @@ export const RegisterPage: React.FC = () => {
           placeholder="Mínimo 6 caracteres"
           value={formData.password}
           onChange={handleChange}
+          error={touched.password ? fieldErrors.password || undefined : undefined}
           required
         />
 
@@ -138,7 +173,7 @@ export const RegisterPage: React.FC = () => {
         />
 
         <div style={{ marginTop: '1.5rem' }}>
-          <Button type="submit" variant="primary" fullWidth isLoading={loading}>
+          <Button type="submit" variant="primary" fullWidth isLoading={loading} disabled={!isValid || loading}>
             Crear Cuenta e Iniciar Sesión
           </Button>
         </div>

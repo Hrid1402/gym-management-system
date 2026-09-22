@@ -1,24 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { validateEmail, validatePassword } from '../../utils/validators';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [touched, setTouched] = useState({ email: false, password: false });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const errors = useMemo(() => {
+    return {
+      email: validateEmail(email),
+      password: validatePassword(password),
+    };
+  }, [email, password]);
+
+  const isValid = !errors.email && !errors.password;
+  const isSubmitDisabled = !email || !password || !isValid || loading;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password) {
-      setError('Por favor completa todos los campos.');
-      return;
-    }
+    if (isSubmitDisabled) return;
 
     setError(null);
     setLoading(true);
@@ -50,7 +59,11 @@ export const LoginPage: React.FC = () => {
           type="email"
           placeholder="tu.correo@ejemplo.com"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setTouched((prev) => ({ ...prev, email: true }));
+          }}
+          error={touched.email ? errors.email || undefined : undefined}
           required
         />
 
@@ -59,7 +72,11 @@ export const LoginPage: React.FC = () => {
           type="password"
           placeholder="••••••••"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setTouched((prev) => ({ ...prev, password: true }));
+          }}
+          error={touched.password ? errors.password || undefined : undefined}
           required
         />
 
@@ -69,7 +86,7 @@ export const LoginPage: React.FC = () => {
           </Link>
         </div>
 
-        <Button type="submit" variant="primary" fullWidth isLoading={loading}>
+        <Button type="submit" variant="primary" fullWidth isLoading={loading} disabled={isSubmitDisabled}>
           Iniciar Sesión
         </Button>
       </form>

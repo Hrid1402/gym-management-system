@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { planService } from '../../api';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -8,15 +8,24 @@ import { Button } from '../../components/ui/Button';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { ArrowLeft } from 'lucide-react';
+import { validateName, validatePrice, validateDurationDays } from '../../utils/validators';
 
 export const EditPlanPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
+  const [initialData, setInitialData] = useState({
+    name: '',
+    price: '' as number | '',
+    durationDays: '' as number | '',
+    isActive: true,
+  });
+
   const [name, setName] = useState('');
   const [price, setPrice] = useState<number | ''>('');
   const [durationDays, setDurationDays] = useState<number | ''>('');
   const [isActive, setIsActive] = useState<boolean>(true);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -28,6 +37,13 @@ export const EditPlanPage: React.FC = () => {
     setErrorMsg(null);
     try {
       const plan = await planService.getPlan(id);
+      const data = {
+        name: plan.name,
+        price: plan.price,
+        durationDays: plan.durationDays,
+        isActive: plan.isActive,
+      };
+      setInitialData(data);
       setName(plan.name);
       setPrice(plan.price);
       setDurationDays(plan.durationDays);
@@ -43,19 +59,30 @@ export const EditPlanPage: React.FC = () => {
     fetchPlan();
   }, [fetchPlan]);
 
+  const errors = useMemo(() => {
+    return {
+      name: validateName(name, 'El nombre del plan'),
+      price: validatePrice(price),
+      durationDays: validateDurationDays(durationDays),
+    };
+  }, [name, price, durationDays]);
+
+  const isValid = !errors.name && !errors.price && !errors.durationDays;
+
+  const isDirty = useMemo(() => {
+    return (
+      name !== initialData.name ||
+      price !== initialData.price ||
+      durationDays !== initialData.durationDays ||
+      isActive !== initialData.isActive
+    );
+  }, [name, price, durationDays, isActive, initialData]);
+
+  const isSaveDisabled = !isDirty || !isValid || submitting;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!id || !name.trim() || price === '' || durationDays === '') return;
-
-    if (Number(price) <= 0) {
-      setErrorMsg('El precio debe ser un valor mayor a cero.');
-      return;
-    }
-
-    if (Number(durationDays) <= 0) {
-      setErrorMsg('La duración debe ser al menos de 1 día.');
-      return;
-    }
+    if (!id || isSaveDisabled) return;
 
     setSubmitting(true);
     setErrorMsg(null);
@@ -96,7 +123,11 @@ export const EditPlanPage: React.FC = () => {
             <Input
               label="Nombre del Plan"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                setTouched((prev) => ({ ...prev, name: true }));
+              }}
+              error={touched.name ? errors.name || undefined : undefined}
               required
             />
 
@@ -106,7 +137,11 @@ export const EditPlanPage: React.FC = () => {
               min="1"
               step="0.01"
               value={price}
-              onChange={(e) => setPrice(e.target.value ? Number(e.target.value) : '')}
+              onChange={(e) => {
+                setPrice(e.target.value ? Number(e.target.value) : '');
+                setTouched((prev) => ({ ...prev, price: true }));
+              }}
+              error={touched.price ? errors.price || undefined : undefined}
               required
             />
 
@@ -115,7 +150,11 @@ export const EditPlanPage: React.FC = () => {
               type="number"
               min="1"
               value={durationDays}
-              onChange={(e) => setDurationDays(e.target.value ? Number(e.target.value) : '')}
+              onChange={(e) => {
+                setDurationDays(e.target.value ? Number(e.target.value) : '');
+                setTouched((prev) => ({ ...prev, durationDays: true }));
+              }}
+              error={touched.durationDays ? errors.durationDays || undefined : undefined}
               required
             />
 
@@ -136,7 +175,7 @@ export const EditPlanPage: React.FC = () => {
               <Button type="button" variant="secondary" onClick={() => navigate('/admin/plans')}>
                 Cancelar
               </Button>
-              <Button type="submit" variant="primary" isLoading={submitting}>
+              <Button type="submit" variant="primary" isLoading={submitting} disabled={isSaveDisabled}>
                 Guardar Cambios
               </Button>
             </div>
