@@ -16,14 +16,9 @@ export class RealUserApi implements IUserApi {
   }
 
   async getUsers(): Promise<User[]> {
-    try {
-      const res = await apiClient.get<any>('users');
-      const rows = Array.isArray(res) ? res : (res?.users || res?.data || []);
-      return rows.map((r: any) => this.mapUser(r));
-    } catch (err) {
-      console.warn('Failed to fetch staff roster from /api/users:', err);
-      return [];
-    }
+    const res = await apiClient.get<any>('users');
+    const rows = Array.isArray(res) ? res : (res?.users || res?.data || []);
+    return rows.map((r: any) => this.mapUser(r));
   }
 
   async createStaff(data: CreateStaffInput): Promise<User> {

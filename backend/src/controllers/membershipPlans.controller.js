@@ -1,10 +1,17 @@
 import { pool } from '../db/index.js';
+import { isPositiveInteger, isPositiveNumber } from '../lib/validation.js';
 
 export const createPlan = async (req, res) => {
   const { name, price, duration_days } = req.body;
 
-  if (!name || price === undefined || !duration_days) {
+  if (!name || price === undefined || duration_days === undefined) {
     return res.status(400).json({ error: 'Name, price, and duration_days are required' });
+  }
+  if (!isPositiveNumber(price)) {
+    return res.status(400).json({ error: 'Price must be a number greater than zero' });
+  }
+  if (!isPositiveInteger(duration_days)) {
+    return res.status(400).json({ error: 'Duration must be a whole number greater than zero' });
   }
 
   const planId = `PLN-${Date.now()}`;
@@ -72,6 +79,13 @@ export const getPlanById = async (req, res) => {
 export const updatePlan = async (req, res) => {
   const { id } = req.params;
   const { name, price, duration_days } = req.body;
+
+  if (price !== undefined && !isPositiveNumber(price)) {
+    return res.status(400).json({ error: 'Price must be a number greater than zero' });
+  }
+  if (duration_days !== undefined && !isPositiveInteger(duration_days)) {
+    return res.status(400).json({ error: 'Duration must be a whole number greater than zero' });
+  }
 
   try {
     const result = await pool.query(

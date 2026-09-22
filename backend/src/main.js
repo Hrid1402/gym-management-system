@@ -20,10 +20,10 @@ app.use(express.json());
 app.use('/api', router);
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Gym Online'});
+  res.json({ message: 'Gym API Online'});
 });
 
-app.get('/api/test-db', async (req, res) => {
+app.get('/test-db', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
     res.json({ 
@@ -34,6 +34,25 @@ app.get('/api/test-db', async (req, res) => {
     console.error('Database connection error:', err);
     res.status(500).json({ error: 'Failed to connect to the database' });
   }
+});
+
+app.use((req, res) => {
+  res.status(404).json({ error: `Route not found: ${req.method} ${req.originalUrl}` });
+});
+
+app.use((error, req, res, next) => {
+  if (res.headersSent) {
+    return next(error);
+  }
+
+  if (error instanceof SyntaxError && error.status === 400 && error.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Request body must contain valid JSON' });
+  }
+
+  console.error('Unhandled API error:', error);
+  return res.status(error.statusCode || 500).json({
+    error: error.statusCode ? error.message : 'Internal server error'
+  });
 });
 
 app.listen(port, () => {

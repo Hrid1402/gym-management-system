@@ -46,9 +46,9 @@ DATABASE_URL=postgres://postgres:postgres@localhost:5432/gym_db
 SUPABASE_URL=https://your-supabase-project.supabase.co
 SUPABASE_ANON_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
-ADMIN_EMAIL=admin@gym.com
-ADMIN_PASSWORD=your-secure-admin-password
-ADMIN_NAME=Genesis Manager
+INITIAL_ADMIN_EMAIL=admin@gym.com
+INITIAL_ADMIN_PASSWORD=your-secure-admin-password
+INITIAL_ADMIN_NAME=Genesis Manager
 FRONTEND_URL=http://localhost:5173
 ```
 
@@ -97,15 +97,22 @@ The React + Vite application will run at `http://localhost:5173`.
 
 ## 🔐 API Reference
 
-All protected routes require an `Authorization` header with a valid JWT Bearer token:
+The API base URL is `http://localhost:3000/api`. All protected routes require an `Authorization` header with a valid JWT Bearer token:
 `Authorization: Bearer <your_token_here>`
+
+Role-dependent responses are intentional and enforced by the backend:
+
+- `CLIENT` requests to `GET /api/memberships` return only memberships belonging to the authenticated client.
+- `ADMIN` and `RECEPTIONIST` requests to `GET /api/memberships` return memberships for all clients.
+- `CLIENT` requests to plan endpoints see active plans only. Staff requests can see active and inactive plans.
+- `/api/clients` is staff-only. Clients use `/api/auth/me` for their own authenticated profile.
 
 ### 1. Authentication (`/api/auth`)
 
 | Method | Endpoint | Access | Description |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/login` | Public | Authenticates Client or Staff and returns JWT. |
-| `POST` | `/register` | Public | Registers a new Client account. |
+| `POST` | `/register` | Public | Creates a Client account and local client profile. Passwords must contain at least 6 characters. |
 | `POST` | `/password-recovery` | Public | Sends a password recovery email via Supabase. |
 | `POST` | `/update-password` | Recovery Token | Updates account password using recovery token. |
 | `POST` | `/change-password` | Authenticated | Allows logged-in user to change password. |
@@ -118,7 +125,7 @@ All protected routes require an `Authorization` header with a valid JWT Bearer t
 | Method | Endpoint | Access | Description |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | Admin | Retrieves complete roster of internal staff users. |
-| `POST` | `/` | Admin | Silently creates a new staff account (Admin, Receptionist) via Supabase Admin API. |
+| `POST` | `/` | Admin | Silently creates a new staff account via Supabase Admin API. Supported roles are `ADMIN`, `RECEPTIONIST`, and `TRAINER`; passwords must contain at least 6 characters. |
 | `PUT` | `/:id` | Admin | Modifies staff name, role, or active status (`is_active`). |
 
 ### 3. Client Management (`/api/clients`)
@@ -128,14 +135,16 @@ All protected routes require an `Authorization` header with a valid JWT Bearer t
 | `GET` | `/` | Admin, Receptionist | Lists all clients. Optional `?search=` filter. |
 | `GET` | `/:id` | Admin, Receptionist | Views client profile and active membership status. |
 | `PUT` | `/:id` | Admin, Receptionist | Updates client information. |
-| `DELETE` | `/:id` | Admin | Permanently deletes a client profile. |
+| `DELETE` | `/:id` | Admin, Receptionist | Permanently deletes a client profile and cascades local memberships. The associated Supabase Auth account is not currently deleted. |
+
+The receptionist UI currently uses `POST /api/auth/register` when creating a client. There is no separate staff-only client-creation endpoint yet.
 
 ### 4. Membership Plans (`/api/plans`)
 
 | Method | Endpoint | Access | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/` | Authenticated | Lists available membership plans. |
-| `GET` | `/:id` | Authenticated | Views specific plan details. |
+| `GET` | `/` | Authenticated | Clients receive active plans only; staff receive all plans, including inactive plans. Results are ordered by price. |
+| `GET` | `/:id` | Authenticated | Views a plan. Clients receive `403` for inactive plans; staff can view inactive plans. |
 | `POST` | `/` | Admin | Creates a new membership plan. |
 | `PUT` | `/:id` | Admin | Updates plan details. |
 | `PATCH` | `/:id/status` | Admin | Toggles plan active status. |
@@ -144,16 +153,24 @@ All protected routes require an `Authorization` header with a valid JWT Bearer t
 
 | Method | Endpoint | Access | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/` | Authenticated | Lists memberships (Client sees own; Staff sees all). |
-| `POST` | `/staff-register` | Admin, Receptionist | Registers client membership with custom start date. |
+| `GET` | `/` | Authenticated | Clients receive only their own memberships; Admins and Receptionists receive memberships for all clients. |
+| `POST` | `/staff-register` | Admin, Receptionist | Registers a membership for an existing client with a valid `YYYY-MM-DD` start date. The plan must be active. |
 | `POST` | `/web-register` | Client | Self-service membership acquisition. |
-| `PATCH` | `/cancel` | Client | Self-service membership cancellation. |
-| `PATCH` | `/:id/cancel` | Admin, Receptionist | Staff-initiated membership cancellation. |
+| `PATCH` | `/cancel` | Authenticated (intended for Client) | Cancels the authenticated user's active or pending membership. The route does not currently explicitly reject staff users. |
+
+There is currently no `PATCH /api/memberships/:id/cancel` endpoint. Staff can register memberships, but staff-initiated cancellation by membership ID has not been implemented.
+
+### 6. Service and Health Endpoints
+
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `http://localhost:3000/` | Public | Returns the API status message. |
+| `GET` | `http://localhost:3000/test-db` | Public | Executes `SELECT NOW()` and reports database connectivity. |
 
 ---
 
 ## 👥 Roles & Permissions
 
 - **CLIENT**: Access to dashboard (`/client`), plan browsing, acquiring/cancelling memberships, and profile settings (`/client/profile`).
-- **RECEPTIONIST**: Access to receptionist dashboard (`/reception`), client directory, client registration, membership management, and profile settings (`/reception/profile`).
+- **RECEPTIONIST**: Access to receptionist dashboard (`/reception`), client directory, client registration, membership management, and profile settings (`/reception/profile`). Receptionists can currently delete clients because the backend route permits both staff roles.
 - **ADMIN (Manager)**: Full system access including staff user management (`/admin/users`), staff detail views, membership plans CRUD, client management, all system memberships, and profile settings (`/admin/profile`).

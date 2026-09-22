@@ -1,4 +1,5 @@
 import { pool } from '../db/index.js';
+import { isValidDate } from '../lib/validation.js';
 
 // 1. Staff Registration
 export const registerMembershipStaff = async (req, res) => {
@@ -6,6 +7,9 @@ export const registerMembershipStaff = async (req, res) => {
 
   if (!client_id || !plan_id || !start_date) {
     return res.status(400).json({ error: 'client_id, plan_id, and start_date are required' });
+  }
+  if (!isValidDate(start_date)) {
+    return res.status(400).json({ error: 'start_date must be a valid date in YYYY-MM-DD format' });
   }
 
   try {
@@ -18,9 +22,12 @@ export const registerMembershipStaff = async (req, res) => {
       return res.status(400).json({ error: 'This client already has an active or pending membership. Cancel it first.' });
     }
 
-    const planResult = await pool.query('SELECT duration_days FROM membership_plans WHERE id = $1', [plan_id]);
+    const planResult = await pool.query(
+      'SELECT duration_days FROM membership_plans WHERE id = $1 AND is_active = true',
+      [plan_id]
+    );
     if (planResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Plan not found' });
+      return res.status(404).json({ error: 'Plan not found or inactive' });
     }
 
     const membershipId = `MEM-${Date.now()}`;

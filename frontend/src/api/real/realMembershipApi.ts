@@ -23,14 +23,9 @@ export class RealMembershipApi implements IMembershipApi {
   }
 
   async getMemberships(): Promise<Membership[]> {
-    try {
-      const rows = await apiClient.get<any[]>('memberships');
-      if (!Array.isArray(rows)) return [];
-      return rows.map((r) => this.mapMembership(r));
-    } catch (err) {
-      console.warn('Backend GET /api/memberships unavailable or unhandled:', err);
-      return [];
-    }
+    const rows = await apiClient.get<any[]>('memberships');
+    if (!Array.isArray(rows)) return [];
+    return rows.map((r) => this.mapMembership(r));
   }
 
   async getClientMemberships(clientId: string): Promise<Membership[]> {

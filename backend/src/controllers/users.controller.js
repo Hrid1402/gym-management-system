@@ -1,5 +1,6 @@
 import { pool } from '../db/index.js';
 import { supabaseAdmin } from '../lib/supabaseClient.js';
+import { isValidPassword } from '../lib/validation.js';
 
 // 1. Get all staff (already done)
 export const getStaff = async (req, res) => {
@@ -22,6 +23,9 @@ export const createStaff = async (req, res) => {
 
   if (!email || !password || !name || !role) {
     return res.status(400).json({ error: 'Email, password, name, and role are required' });
+  }
+  if (!isValidPassword(password)) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters long' });
   }
 
   // Ensure the role is valid based on your ENUM

@@ -1,5 +1,6 @@
 import { pool } from '../db/index.js';
 import { supabase, supabaseAdmin } from '../lib/supabaseClient.js';
+import { isValidDate, isValidPassword } from '../lib/validation.js';
 import 'dotenv/config';
 
 // --- EXISTING LOGIC ---
@@ -39,8 +40,19 @@ export const login = async (req, res) => {
 
 export const register = async (req, res) => {
   const { email, password, dni, first_name, last_name, phone } = req.body;
+  if (!email || !password || !dni || !first_name || !last_name || !phone) {
+    return res.status(400).json({ error: 'Email, password, DNI, first name, last name, and phone are required' });
+  }
+  if (!isValidPassword(password)) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+  }
+
   const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
   if (authError) return res.status(400).json({ error: authError.message });
+
+  if (!authData.user) {
+    return res.status(400).json({ error: 'Unable to create authentication account' });
+  }
 
   const supabaseUserId = authData.user.id;
   const clientDbId = `CLI-${Date.now()}`;
@@ -88,7 +100,9 @@ export const updatePassword = async (req, res) => {
   const { new_password } = req.body;
   const authHeader = req.headers.authorization;
   
-  if (!new_password) return res.status(400).json({ error: 'New password required' });
+  if (!isValidPassword(new_password)) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+  }
   if (!authHeader) return res.status(401).json({ error: 'Missing token' });
 
   const token = authHeader.split(' ')[1];
@@ -122,7 +136,9 @@ export const changePassword = async (req, res) => {
   const { new_password } = req.body;
   const token = req.headers.authorization.split(' ')[1];
 
-  if (!new_password) return res.status(400).json({ error: 'New password is required' });
+  if (!isValidPassword(new_password)) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+  }
 
   try {
     // 1. Verify the current session token
@@ -148,6 +164,10 @@ export const updateProfile = async (req, res) => {
   const token = req.headers.authorization.split(' ')[1];
   const userId = req.user.id;
   const userType = req.user.type;
+
+  if (req.body.date_of_birth !== undefined && req.body.date_of_birth !== null && !isValidDate(req.body.date_of_birth)) {
+    return res.status(400).json({ error: 'date_of_birth must be a valid date in YYYY-MM-DD format' });
+  }
 
   try {
     // 1. Get their exact Supabase ID using their token

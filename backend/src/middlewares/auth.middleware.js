@@ -34,6 +34,9 @@ export const requireAuth = async (req, res, next) => {
     );
 
     if (staffResult.rows.length > 0) {
+      if (!staffResult.rows[0].is_active) {
+        return res.status(403).json({ error: 'This account has been deactivated' });
+      }
       req.user = { type: 'staff', ...staffResult.rows[0] };
       return next();
     }
