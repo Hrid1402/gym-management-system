@@ -65,19 +65,19 @@ export class MockMembershipApi implements IMembershipApi {
 
     const client = store.clients.find((c) => c.id === data.clientId);
     if (!client) {
-      throw createApiError(`Client with ID ${data.clientId} not found`, 404);
+      throw createApiError(`Cliente con ID ${data.clientId} no encontrado`, 404);
     }
 
     const plan = store.plans.find((p) => p.id === data.planId);
     if (!plan || !plan.isActive) {
-      throw createApiError('Plan not found or inactive', 404);
+      throw createApiError('Plan no encontrado o inactivo', 404);
     }
 
     const existingActive = store.memberships.find(
       (m) => m.clientId === data.clientId && (m.status === 'ACTIVE' || m.status === 'PENDING')
     );
     if (existingActive) {
-      throw createApiError('This client already has an active or pending membership. Cancel it first.', 400);
+      throw createApiError('Este cliente ya tiene una membresía activa o pendiente. Cancélala primero.', 400);
     }
 
     const startDate = data.startDate || getTodayString();
@@ -105,12 +105,12 @@ export class MockMembershipApi implements IMembershipApi {
     await delay();
     const sessionRaw = localStorage.getItem(SESSION_KEY);
     if (!sessionRaw) {
-      throw createApiError('Unauthenticated session', 401);
+      throw createApiError('Sesión no autenticada', 401);
     }
 
     const session = JSON.parse(sessionRaw);
     if (!session.client?.id) {
-      throw createApiError('Only clients can use the web registration flow', 403);
+      throw createApiError('Solo los clientes pueden usar el flujo de registro web', 403);
     }
 
     const clientId = session.client.id;
@@ -118,14 +118,14 @@ export class MockMembershipApi implements IMembershipApi {
 
     const plan = store.plans.find((p) => p.id === data.planId);
     if (!plan || !plan.isActive) {
-      throw createApiError('Plan not found or inactive', 404);
+      throw createApiError('Plan no encontrado o inactivo', 404);
     }
 
     const existingActive = store.memberships.find(
       (m) => m.clientId === clientId && (m.status === 'ACTIVE' || m.status === 'PENDING')
     );
     if (existingActive) {
-      throw createApiError('You already have an active membership. Please cancel it before buying a new one.', 400);
+      throw createApiError('Ya tienes una membresía activa. Cancélala antes de adquirir una nueva.', 400);
     }
 
     const startDate = getTodayString();
@@ -154,12 +154,12 @@ export class MockMembershipApi implements IMembershipApi {
     const store = getMockStore();
     const index = store.memberships.findIndex((m) => m.id === id);
     if (index === -1) {
-      throw createApiError(`Membership with ID ${id} not found`, 404);
+      throw createApiError(`Membresía con ID ${id} no encontrada`, 404);
     }
 
     const mem = store.memberships[index];
     if (mem.status === 'CANCELLED' || mem.status === 'EXPIRED') {
-      throw createApiError(`Membership is already ${mem.status.toLowerCase()}`, 400);
+      throw createApiError(`La membresía ya está ${mem.status === 'CANCELLED' ? 'cancelada' : 'vencida'}`, 400);
     }
 
     store.memberships[index].status = 'CANCELLED';
@@ -172,13 +172,13 @@ export class MockMembershipApi implements IMembershipApi {
     await delay();
     const sessionRaw = localStorage.getItem(SESSION_KEY);
     if (!sessionRaw) {
-      throw createApiError('Unauthenticated session', 401);
+      throw createApiError('Sesión no autenticada', 401);
     }
 
     const session = JSON.parse(sessionRaw);
     const clientId = session.client?.id || session.user?.id;
     if (!clientId) {
-      throw createApiError('Unauthenticated client session', 401);
+      throw createApiError('Sesión de cliente no autenticada', 401);
     }
 
     const store = getMockStore();
@@ -186,7 +186,7 @@ export class MockMembershipApi implements IMembershipApi {
       (m) => m.clientId === clientId && (m.status === 'ACTIVE' || m.status === 'PENDING')
     );
     if (!active) {
-      throw createApiError('No active membership found to cancel', 404);
+      throw createApiError('No se encontró una membresía activa para cancelar', 404);
     }
 
     return this.cancelMembership(active.id);

@@ -35,7 +35,7 @@ export const AdminMembershipsPage: React.FC = () => {
         setClients(cList);
         setPlans(pList);
       } catch (err) {
-        console.error('Failed to load memberships:', err);
+        console.error('Error al cargar membresías:', err);
       } finally {
         setLoading(false);
       }
@@ -46,7 +46,7 @@ export const AdminMembershipsPage: React.FC = () => {
   const getClientName = (mem: Membership): string => {
     if (mem.clientName) return mem.clientName;
     const c = clients.find((client) => client.id === mem.clientId);
-    return c ? `${c.firstName} ${c.lastName}` : 'Client';
+    return c ? `${c.firstName} ${c.lastName}` : 'Cliente';
   };
 
   const getClientDni = (mem: Membership): string => {
@@ -58,7 +58,7 @@ export const AdminMembershipsPage: React.FC = () => {
   const getPlanName = (mem: Membership): string => {
     if (mem.planName) return mem.planName;
     const p = plans.find((plan) => plan.id === mem.planId);
-    return p ? p.name : 'Membership Plan';
+    return p ? p.name : 'Plan de Membresía';
   };
 
   const getPrice = (mem: Membership): number | null => {
@@ -102,11 +102,11 @@ export const AdminMembershipsPage: React.FC = () => {
 
   const isFiltered = searchTerm.trim() !== '' || statusFilter !== 'ALL' || sortBy !== 'default';
 
-  if (loading) return <LoadingState message="Loading system memberships..." />;
+  if (loading) return <LoadingState message="Cargando membresías del sistema..." />;
 
   return (
     <div>
-      <PageHeader title="All Memberships" subtitle="Complete list of all registered member subscriptions" />
+      <PageHeader title="Todas las Membresías" subtitle="Lista completa de suscripciones registradas" />
 
       {/* Filter & Toolbar Header */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.25rem' }}>
@@ -124,15 +124,15 @@ export const AdminMembershipsPage: React.FC = () => {
                 border: isFiltered ? '1px solid #91d5ff' : '1px solid var(--color-neutral-300)',
               }}
             >
-              {sorted.length} {sorted.length === 1 ? 'result' : 'results'} {isFiltered ? `(filtered from ${memberships.length})` : 'total'}
+              {sorted.length} {sorted.length === 1 ? 'resultado' : 'resultados'} {isFiltered ? `(filtrados de ${memberships.length})` : 'total'}
             </span>
           </div>
 
           {/* Filter Controls */}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <div style={{ width: '240px' }}>
+            <div style={{ minWidth: '180px', flex: '1 1 180px' }}>
               <Input
-                placeholder="Search Client, DNI, Plan..."
+                placeholder="Buscar Cliente, DNI, Plan..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -143,11 +143,11 @@ export const AdminMembershipsPage: React.FC = () => {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 options={[
-                  { value: 'ALL', label: 'All Statuses' },
-                  { value: 'ACTIVE', label: 'Active' },
-                  { value: 'CANCELLED', label: 'Cancelled' },
-                  { value: 'PENDING', label: 'Pending' },
-                  { value: 'EXPIRED', label: 'Expired' },
+                  { value: 'ALL', label: 'Todos los Estados' },
+                  { value: 'ACTIVE', label: 'Activas' },
+                  { value: 'CANCELLED', label: 'Canceladas' },
+                  { value: 'PENDING', label: 'Pendientes' },
+                  { value: 'EXPIRED', label: 'Vencidas' },
                 ]}
               />
             </div>
@@ -157,12 +157,12 @@ export const AdminMembershipsPage: React.FC = () => {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
                 options={[
-                  { value: 'default', label: 'Sort: Default' },
-                  { value: 'start_asc', label: 'Start Date (Sooner)' },
-                  { value: 'start_desc', label: 'Start Date (Later)' },
-                  { value: 'end_asc', label: 'End Date (Expiring Soon)' },
-                  { value: 'price_desc', label: 'Price: High → Low' },
-                  { value: 'price_asc', label: 'Price: Low → High' },
+                  { value: 'default', label: 'Orden: Por Defecto' },
+                  { value: 'start_asc', label: 'Fecha Inicio (Más antigua)' },
+                  { value: 'start_desc', label: 'Fecha Inicio (Más reciente)' },
+                  { value: 'end_asc', label: 'Fecha Vencimiento (Próxima)' },
+                  { value: 'price_desc', label: 'Precio: Mayor → Menor' },
+                  { value: 'price_asc', label: 'Precio: Menor → Mayor' },
                 ]}
               />
             </div>
@@ -171,19 +171,19 @@ export const AdminMembershipsPage: React.FC = () => {
       </div>
 
       {sorted.length === 0 ? (
-        <EmptyState title="No memberships found" description="No client memberships match your current filter criteria." />
+        <EmptyState title="No se encontraron membresías" description="No hay membresías de clientes que coincidan con los filtros actuales." />
       ) : (
         <div className="table-container">
           <table className="table">
             <thead>
               <tr>
-                <th>Membership ID</th>
-                <th>Client Name</th>
-                <th>Plan Name</th>
-                <th>Price</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Status</th>
+                <th>ID Membresía</th>
+                <th>Nombre del Cliente</th>
+                <th>Plan</th>
+                <th>Precio</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Vencimiento</th>
+                <th>Estado</th>
               </tr>
             </thead>
             <tbody>

@@ -29,7 +29,7 @@ export const AdminPlansPage: React.FC = () => {
       const data = await planService.getPlans();
       setPlans(data);
     } catch (err) {
-      console.error('Failed to load plans:', err);
+      console.error('Error al cargar planes:', err);
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ export const AdminPlansPage: React.FC = () => {
       await planService.updatePlanStatus(plan.id, !plan.isActive);
       await fetchPlans();
     } catch (err: any) {
-      alert(err.message || 'Failed to update plan status');
+      alert(err.message || 'Error al actualizar el estado del plan');
     }
   };
 
@@ -65,17 +65,17 @@ export const AdminPlansPage: React.FC = () => {
 
   const isFiltered = searchTerm.trim() !== '' || statusFilter !== 'ALL' || sortBy !== 'name_asc';
 
-  if (loading) return <LoadingState message="Loading membership plans..." />;
+  if (loading) return <LoadingState message="Cargando planes de membresía..." />;
 
   return (
     <div>
       <PageHeader
-        title="Membership Plans"
-        subtitle="Manage plan offerings, pricing, durations, and active states"
+        title="Planes de Membresía"
+        subtitle="Gestiona la oferta de planes, precios, duración y estados de activación"
         action={
           <Link to="/admin/plans/new">
             <Button variant="primary" icon={<PlusCircle size={16} />}>
-              Create New Plan
+              Crear Nuevo Plan
             </Button>
           </Link>
         }
@@ -97,15 +97,15 @@ export const AdminPlansPage: React.FC = () => {
                 border: isFiltered ? '1px solid #91d5ff' : '1px solid var(--color-neutral-300)',
               }}
             >
-              {sorted.length} {sorted.length === 1 ? 'plan' : 'plans'} {isFiltered ? `(filtered from ${plans.length})` : 'total'}
+              {sorted.length} {sorted.length === 1 ? 'plan' : 'planes'} {isFiltered ? `(filtrados de ${plans.length})` : 'total'}
             </span>
           </div>
 
           {/* Filter Controls */}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <div style={{ width: '220px' }}>
+            <div style={{ minWidth: '180px', flex: '1 1 180px' }}>
               <Input
-                placeholder="Search Plan Name..."
+                placeholder="Buscar Nombre de Plan..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -116,9 +116,9 @@ export const AdminPlansPage: React.FC = () => {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 options={[
-                  { value: 'ALL', label: 'All Statuses' },
-                  { value: 'ACTIVE', label: 'Active Plans' },
-                  { value: 'INACTIVE', label: 'Inactive' },
+                  { value: 'ALL', label: 'Todos los Estados' },
+                  { value: 'ACTIVE', label: 'Planes Activos' },
+                  { value: 'INACTIVE', label: 'Inactivos' },
                 ]}
               />
             </div>
@@ -128,10 +128,10 @@ export const AdminPlansPage: React.FC = () => {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as PlanSortOption)}
                 options={[
-                  { value: 'name_asc', label: 'Sort: Name (A-Z)' },
-                  { value: 'price_asc', label: 'Price: Low → High' },
-                  { value: 'price_desc', label: 'Price: High → Low' },
-                  { value: 'duration_desc', label: 'Duration (Days)' },
+                  { value: 'name_asc', label: 'Orden: Nombre (A-Z)' },
+                  { value: 'price_asc', label: 'Precio: Menor → Mayor' },
+                  { value: 'price_desc', label: 'Precio: Mayor → Menor' },
+                  { value: 'duration_desc', label: 'Duración (Días)' },
                 ]}
               />
             </div>
@@ -140,17 +140,17 @@ export const AdminPlansPage: React.FC = () => {
       </div>
 
       {sorted.length === 0 ? (
-        <EmptyState title="No plans found" description="No membership plans match your filter criteria." />
+        <EmptyState title="No se encontraron planes" description="No hay planes de membresía que coincidan con la búsqueda." />
       ) : (
         <div className="table-container">
           <table className="table">
             <thead>
               <tr>
-                <th>Plan Name</th>
-                <th>Price ($)</th>
-                <th>Duration (Days)</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>Nombre del Plan</th>
+                <th>Precio ($)</th>
+                <th>Duración (Días)</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -160,19 +160,19 @@ export const AdminPlansPage: React.FC = () => {
                     <strong style={{ color: 'var(--color-neutral-900)' }}>{plan.name}</strong>
                   </td>
                   <td>${plan.price}</td>
-                  <td>{plan.durationDays} Days</td>
+                  <td>{plan.durationDays} Días</td>
                   <td>
                     <StatusBadge isActive={plan.isActive} />
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <Button
                         variant="secondary"
                         size="sm"
                         icon={<Edit size={14} />}
                         onClick={() => navigate(`/admin/plans/${plan.id}/edit`)}
                       >
-                        Edit
+                        Editar
                       </Button>
                       <Button
                         variant={plan.isActive ? 'outline-danger' : 'secondary'}
@@ -180,7 +180,7 @@ export const AdminPlansPage: React.FC = () => {
                         icon={plan.isActive ? <XCircle size={14} /> : <CheckCircle size={14} />}
                         onClick={() => handleToggleActive(plan)}
                       >
-                        {plan.isActive ? 'Deactivate' : 'Activate'}
+                        {plan.isActive ? 'Desactivar' : 'Activar'}
                       </Button>
                     </div>
                   </td>

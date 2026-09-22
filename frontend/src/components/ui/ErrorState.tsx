@@ -9,8 +9,8 @@ interface ErrorStateProps {
 }
 
 export const ErrorState: React.FC<ErrorStateProps> = ({
-  title = 'Something went wrong',
-  message = 'Unable to load data. Please try again.',
+  title = 'Algo salió mal',
+  message = 'No se pudieron cargar los datos. Por favor, intenta de nuevo.',
   onRetry,
 }) => {
   return (
@@ -20,7 +20,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
       <p className="state-desc">{message}</p>
       {onRetry && (
         <Button variant="secondary" size="sm" onClick={onRetry} style={{ marginTop: '0.5rem' }}>
-          Try Again
+          Intentar de nuevo
         </Button>
       )}
     </div>

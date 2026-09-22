@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { StatusBadge } from '../components/ui/StatusBadge';
+import { APP_NAME } from '../config/appConfig';
 import {
   Dumbbell,
   LayoutDashboard,
@@ -11,100 +12,187 @@ import {
   UserPlus,
   LogOut,
   User as UserIcon,
+  Menu,
+  X,
 } from 'lucide-react';
 
 export const DashboardLayout: React.FC = () => {
   const { user, client, logout } = useAuth();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
   if (!user) return null;
 
   return (
     <div className="app-container">
+      {/* Mobile Drawer Overlay */}
+      <div
+        className={`sidebar-overlay ${mobileMenuOpen ? 'sidebar-open' : ''}`}
+        onClick={closeMobileMenu}
+      />
+
       {/* Sidebar Navigation */}
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <Dumbbell size={24} style={{ color: 'var(--color-primary)' }} />
-          <span className="sidebar-brand">GymManager</span>
+      <aside className={`sidebar ${mobileMenuOpen ? 'sidebar-open' : ''}`}>
+        <div className="sidebar-header" style={{ justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Dumbbell size={24} style={{ color: 'var(--color-primary)' }} />
+            <span className="sidebar-brand">{APP_NAME}</span>
+          </div>
+          <button
+            className="mobile-toggle-btn"
+            onClick={closeMobileMenu}
+            style={{ color: '#ffffff' }}
+            aria-label="Cerrar menú"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="sidebar-nav">
           {user.role === 'CLIENT' && (
             <>
-              <NavLink to="/client" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/client"
+                end
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <LayoutDashboard size={18} />
-                <span>Dashboard</span>
+                <span>Inicio</span>
               </NavLink>
-              <NavLink to="/client/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/client/profile"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <UserIcon size={18} />
-                <span>My Profile</span>
+                <span>Mi Perfil</span>
               </NavLink>
-              <NavLink to="/client/plans" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/client/plans"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <CreditCard size={18} />
-                <span>Membership Plans</span>
+                <span>Planes de Membresía</span>
               </NavLink>
-              <NavLink to="/client/membership" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/client/membership"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <UserCheck size={18} />
-                <span>Acquire Membership</span>
+                <span>Adquirir Membresía</span>
               </NavLink>
             </>
           )}
 
           {user.role === 'RECEPTIONIST' && (
             <>
-              <NavLink to="/reception" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/reception"
+                end
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <LayoutDashboard size={18} />
-                <span>Dashboard</span>
+                <span>Inicio</span>
               </NavLink>
-              <NavLink to="/reception/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/reception/profile"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <UserIcon size={18} />
-                <span>My Profile</span>
+                <span>Mi Perfil</span>
               </NavLink>
-              <NavLink to="/reception/clients" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/reception/clients"
+                end
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <Users size={18} />
-                <span>Clients</span>
+                <span>Gestión de Clientes</span>
               </NavLink>
-              <NavLink to="/reception/clients/new" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/reception/clients/new"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <UserPlus size={18} />
-                <span>Register Client</span>
+                <span>Registrar Cliente</span>
               </NavLink>
-              <NavLink to="/reception/memberships/new" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/reception/memberships/new"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <CreditCard size={18} />
-                <span>New Membership</span>
+                <span>Nueva Membresía</span>
               </NavLink>
             </>
           )}
 
           {user.role === 'ADMIN' && (
             <>
-              <NavLink to="/admin" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/admin"
+                end
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <LayoutDashboard size={18} />
-                <span>Dashboard</span>
+                <span>Inicio</span>
               </NavLink>
-              <NavLink to="/admin/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/admin/profile"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <UserIcon size={18} />
-                <span>My Profile</span>
+                <span>Mi Perfil</span>
               </NavLink>
-              <NavLink to="/admin/clients" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/admin/clients"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <Users size={18} />
-                <span>Clients</span>
+                <span>Clientes</span>
               </NavLink>
-              <NavLink to="/admin/memberships" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/admin/memberships"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <UserCheck size={18} />
-                <span>All Memberships</span>
+                <span>Todas las Membresías</span>
               </NavLink>
-              <NavLink to="/admin/plans" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/admin/plans"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <CreditCard size={18} />
-                <span>Plans</span>
+                <span>Planes</span>
               </NavLink>
-              <NavLink to="/admin/users" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/admin/users"
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+              >
                 <UserCheck size={18} />
-                <span>Staff Users</span>
+                <span>Personal</span>
               </NavLink>
             </>
           )}
@@ -114,12 +202,21 @@ export const DashboardLayout: React.FC = () => {
       {/* Main Content Area */}
       <div className="main-content">
         <header className="topbar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.875rem', color: 'var(--color-neutral-500)' }}>Logged in as:</span>
-            <strong style={{ fontSize: '0.875rem', color: 'var(--color-neutral-900)' }}>
-              {client ? `${client.firstName} ${client.lastName}` : user.name}
-            </strong>
-            <StatusBadge role={user.role} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button
+              className="mobile-toggle-btn"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Abrir menú"
+            >
+              <Menu size={22} />
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.875rem', color: 'var(--color-neutral-500)' }}>Sesión:</span>
+              <strong style={{ fontSize: '0.875rem', color: 'var(--color-neutral-900)' }}>
+                {client ? `${client.firstName} ${client.lastName}` : user.name}
+              </strong>
+              <StatusBadge role={user.role} />
+            </div>
           </div>
 
           <button
@@ -137,7 +234,7 @@ export const DashboardLayout: React.FC = () => {
             }}
           >
             <LogOut size={16} />
-            <span>Logout</span>
+            <span>Cerrar sesión</span>
           </button>
         </header>
 

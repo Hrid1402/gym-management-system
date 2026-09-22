@@ -19,8 +19,18 @@ export const NewPlanPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || price === '' || durationDays === '') {
-      setErrorMsg('Please fill in all fields');
+    if (!name.trim() || price === '' || durationDays === '') {
+      setErrorMsg('Por favor completa todos los campos.');
+      return;
+    }
+
+    if (Number(price) <= 0) {
+      setErrorMsg('El precio debe ser un valor mayor a cero.');
+      return;
+    }
+
+    if (Number(durationDays) <= 0) {
+      setErrorMsg('La duración debe ser al menos de 1 día.');
       return;
     }
 
@@ -35,7 +45,7 @@ export const NewPlanPage: React.FC = () => {
       });
       navigate('/admin/plans');
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to create plan');
+      setErrorMsg(err.message || 'Error al crear el plan');
     } finally {
       setLoading(false);
     }
@@ -45,41 +55,41 @@ export const NewPlanPage: React.FC = () => {
     <div>
       <div style={{ marginBottom: '1rem' }}>
         <Link to="/admin/plans" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.875rem' }}>
-          <ArrowLeft size={16} /> Back to Plans
+          <ArrowLeft size={16} /> Volver a Planes
         </Link>
       </div>
 
-      <PageHeader title="Create Membership Plan" subtitle="Add a new membership offer for gym clients" />
+      <PageHeader title="Crear Plan de Membresía" subtitle="Añade una nueva oferta de membresía para los clientes" />
 
       <div style={{ maxWidth: '550px' }}>
-        <Card title="Plan Details">
+        <Card title="Detalles del Plan">
           {errorMsg && <div className="error-box">{errorMsg}</div>}
 
           <form onSubmit={handleSubmit}>
             <Input
-              label="Plan Name"
-              placeholder="e.g. Monthly VIP Pass"
+              label="Nombre del Plan"
+              placeholder="Ej: Plan Mensual VIP"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
 
             <Input
-              label="Price ($ USD)"
+              label="Precio ($ USD)"
               type="number"
               min="1"
               step="0.01"
-              placeholder="e.g. 35.00"
+              placeholder="Ej: 35.00"
               value={price}
               onChange={(e) => setPrice(e.target.value ? Number(e.target.value) : '')}
               required
             />
 
             <Input
-              label="Duration (in Days)"
+              label="Duración (en Días)"
               type="number"
               min="1"
-              placeholder="e.g. 30"
+              placeholder="Ej: 30"
               value={durationDays}
               onChange={(e) => setDurationDays(e.target.value ? Number(e.target.value) : '')}
               required
@@ -87,10 +97,10 @@ export const NewPlanPage: React.FC = () => {
 
             <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.75rem' }}>
               <Button type="button" variant="secondary" onClick={() => navigate('/admin/plans')}>
-                Cancel
+                Cancelar
               </Button>
               <Button type="submit" variant="primary" isLoading={loading}>
-                Create Plan
+                Crear Plan
               </Button>
             </div>
           </form>

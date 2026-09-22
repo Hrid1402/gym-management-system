@@ -25,7 +25,7 @@ export class MockPlanApi implements IPlanApi {
     const store = getMockStore();
     const plan = store.plans.find((p) => p.id === id);
     if (!plan) {
-      throw createApiError(`Plan with ID ${id} not found`, 404);
+      throw createApiError(`Plan con ID ${id} no encontrado`, 404);
     }
     return { ...plan };
   }
@@ -35,13 +35,13 @@ export class MockPlanApi implements IPlanApi {
     const store = getMockStore();
 
     if (!data.name || !data.name.trim()) {
-      throw createApiError('Plan name is required', 400);
+      throw createApiError('El nombre del plan es obligatorio', 400);
     }
     if (data.price <= 0) {
-      throw createApiError('Plan price must be greater than 0', 400);
+      throw createApiError('El precio del plan debe ser mayor a 0', 400);
     }
     if (data.durationDays <= 0) {
-      throw createApiError('Plan duration in days must be greater than 0', 400);
+      throw createApiError('La duración del plan en días debe ser mayor a 0', 400);
     }
 
     const newPlan: MembershipPlan = {
@@ -63,7 +63,7 @@ export class MockPlanApi implements IPlanApi {
     const store = getMockStore();
     const index = store.plans.findIndex((p) => p.id === id);
     if (index === -1) {
-      throw createApiError(`Plan with ID ${id} not found`, 404);
+      throw createApiError(`Plan con ID ${id} no encontrado`, 404);
     }
 
     const currentPlan = store.plans[index];
@@ -86,7 +86,7 @@ export class MockPlanApi implements IPlanApi {
     const store = getMockStore();
     const index = store.plans.findIndex((p) => p.id === id);
     if (index === -1) {
-      throw createApiError(`Plan with ID ${id} not found`, 404);
+      throw createApiError(`Plan con ID ${id} no encontrado`, 404);
     }
 
     store.plans[index].isActive = isActive;

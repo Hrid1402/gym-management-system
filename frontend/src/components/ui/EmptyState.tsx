@@ -8,8 +8,8 @@ interface EmptyStateProps {
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
-  title = 'No items found',
-  description = 'There are no records to display at this moment.',
+  title = 'No se encontraron elementos',
+  description = 'No hay registros disponibles en este momento.',
   action,
 }) => {
   return (

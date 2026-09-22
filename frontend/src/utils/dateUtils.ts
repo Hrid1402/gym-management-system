@@ -30,10 +30,12 @@ export function formatDateForInput(dateStr?: string | null): string {
 }
 
 /**
- * Formats a date string for user-friendly display in UI text elements.
+ * Formats a date string for user-friendly display in UI text elements (DD/MM/YYYY).
  */
 export function formatDateForDisplay(dateStr?: string | null): string {
   const formatted = formatDateForInput(dateStr);
   if (!formatted) return '—';
-  return formatted;
+  const [year, month, day] = formatted.split('-');
+  return `${day}/${month}/${year}`;
 }
+

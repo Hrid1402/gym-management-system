@@ -6,7 +6,6 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { UserCheck, KeyRound, CheckCircle, AlertCircle } from 'lucide-react';
-
 import { formatDateForInput } from '../../utils/dateUtils';
 
 export const ClientProfilePage: React.FC = () => {
@@ -49,7 +48,7 @@ export const ClientProfilePage: React.FC = () => {
   }, [client, user]);
 
   if (isLoading) {
-    return <LoadingState message="Loading profile information..." />;
+    return <LoadingState message="Cargando datos de perfil..." />;
   }
 
   const handleSubmitProfile = async (e: React.FormEvent) => {
@@ -68,9 +67,9 @@ export const ClientProfilePage: React.FC = () => {
         date_of_birth: dateOfBirth ? formatDateForInput(dateOfBirth) : null,
         address,
       });
-      setSuccessMsg('Your profile data has been updated successfully!');
+      setSuccessMsg('¡Tus datos de perfil se han actualizado exitosamente!');
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to update profile details');
+      setErrorMsg(err.message || 'Error al actualizar el perfil');
     } finally {
       setSaving(false);
     }
@@ -79,11 +78,11 @@ export const ClientProfilePage: React.FC = () => {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword.length < 6) {
-      setPasswordError('Password must be at least 6 characters.');
+      setPasswordError('La contraseña debe tener al menos 6 caracteres.');
       return;
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError('Passwords do not match.');
+      setPasswordError('Las contraseñas no coinciden.');
       return;
     }
 
@@ -93,11 +92,11 @@ export const ClientProfilePage: React.FC = () => {
 
     try {
       await changePassword(newPassword);
-      setPasswordSuccess('Password updated successfully!');
+      setPasswordSuccess('¡Contraseña actualizada exitosamente!');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err: any) {
-      setPasswordError(err.message || 'Failed to change password');
+      setPasswordError(err.message || 'Error al cambiar la contraseña');
     } finally {
       setChangingPassword(false);
     }
@@ -105,11 +104,11 @@ export const ClientProfilePage: React.FC = () => {
 
   return (
     <div>
-      <PageHeader title="My Profile & Settings" subtitle="Manage your account details and password" />
+      <PageHeader title="Mi Perfil y Configuración" subtitle="Gestiona los datos de tu cuenta y contraseña" />
 
       <div style={{ maxWidth: '650px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {/* Profile Card */}
-        <Card title="Personal Profile Information">
+        <Card title="Información Personal del Perfil">
           <div
             style={{
               display: 'flex',
@@ -126,7 +125,7 @@ export const ClientProfilePage: React.FC = () => {
           >
             <UserCheck size={20} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
             <div>
-              Update your profile information below. Email changes will automatically sync to your login account.
+              Actualiza tu información personal. Las modificaciones de correo se sincronizarán con tu cuenta de acceso.
             </div>
           </div>
 
@@ -171,15 +170,15 @@ export const ClientProfilePage: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmitProfile}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="form-grid-2">
               <Input
-                label="First Name *"
+                label="Nombre"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
               />
               <Input
-                label="Last Name *"
+                label="Apellido"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
@@ -187,14 +186,14 @@ export const ClientProfilePage: React.FC = () => {
             </div>
 
             <Input
-              label="DNI / Identification *"
+              label="DNI / Documento de Identidad"
               value={dni}
               onChange={(e) => setDni(e.target.value)}
               required
             />
 
             <Input
-              label="Email Address *"
+              label="Correo Electrónico"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -202,40 +201,40 @@ export const ClientProfilePage: React.FC = () => {
             />
 
             <Input
-              label="Phone Number"
+              label="Teléfono"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="e.g. +1 555-0199"
+              placeholder="Ej: +54 9 11 1234-5678"
             />
 
             <Input
-              label="Date of Birth"
+              label="Fecha de Nacimiento"
               type="date"
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
             />
 
             <Input
-              label="Address"
+              label="Dirección"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="e.g. 123 Main St, City"
+              placeholder="Ej: Av. Principal 123"
             />
 
             <div style={{ marginTop: '1.5rem' }}>
               <Button type="submit" variant="primary" isLoading={saving}>
-                Save Changes
+                Guardar Cambios
               </Button>
             </div>
           </form>
         </Card>
 
         {/* Change Password Card */}
-        <Card title="Change Password">
+        <Card title="Cambiar Contraseña">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
             <KeyRound size={20} style={{ color: 'var(--color-neutral-600)' }} />
             <span style={{ fontSize: '0.875rem', color: 'var(--color-neutral-600)' }}>
-              Update your client account password.
+              Actualiza la contraseña de tu cuenta de cliente.
             </span>
           </div>
 
@@ -281,18 +280,18 @@ export const ClientProfilePage: React.FC = () => {
 
           <form onSubmit={handleChangePassword}>
             <Input
-              label="New Password *"
+              label="Nueva Contraseña"
               type="password"
-              placeholder="Minimum 6 characters"
+              placeholder="Mínimo 6 caracteres"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
             />
 
             <Input
-              label="Confirm New Password *"
+              label="Confirmar Nueva Contraseña"
               type="password"
-              placeholder="Re-enter new password"
+              placeholder="Vuelve a ingresar la contraseña"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -300,7 +299,7 @@ export const ClientProfilePage: React.FC = () => {
 
             <div style={{ marginTop: '1.25rem' }}>
               <Button type="submit" variant="secondary" isLoading={changingPassword}>
-                Update Password
+                Actualizar Contraseña
               </Button>
             </div>
           </form>

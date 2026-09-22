@@ -41,7 +41,7 @@ export const ClientDashboardPage: React.FC = () => {
         }
       }
     } catch (err) {
-      console.error('Failed to load client membership:', err);
+      console.error('Error al cargar la membresía del cliente:', err);
     } finally {
       setLoading(false);
     }
@@ -61,53 +61,53 @@ export const ClientDashboardPage: React.FC = () => {
       setShowCancelModal(false);
       await loadClientData();
     } catch (err: any) {
-      setCancelError(err.message || 'Failed to cancel membership');
+      setCancelError(err.message || 'No se pudo cancelar la membresía');
     } finally {
       setCancelling(false);
     }
   };
 
   if (authLoading || loading) {
-    return <LoadingState message="Loading your membership details..." />;
+    return <LoadingState message="Cargando información de tu membresía..." />;
   }
 
   const displayName = client
     ? `${client.firstName} ${client.lastName}`
-    : user?.name || 'Member';
+    : user?.name || 'Cliente';
 
-  const planTitle = plan?.name || membership?.planName || 'Membership Plan';
+  const planTitle = plan?.name || membership?.planName || 'Plan de Membresía';
   const planPriceDisplay = plan?.price !== undefined ? `$${plan.price}` : '';
   const canCancel = membership?.status === 'ACTIVE' || membership?.status === 'PENDING';
 
   return (
     <div>
       <PageHeader
-        title={`Welcome, ${displayName}!`}
-        subtitle="Manage your gym membership and account details"
+        title={`¡Bienvenido, ${displayName}!`}
+        subtitle="Gestiona tu membresía y detalles de tu cuenta"
       />
 
       <div style={{ maxWidth: '650px' }}>
-        <Card title="Current Membership Status">
+        <Card title="Estado Actual de tu Membresía">
           {membership ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div>
                   <h4 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-neutral-900)' }}>
                     {planTitle}
                   </h4>
                   {planPriceDisplay && (
                     <p style={{ fontSize: '0.875rem', color: 'var(--color-neutral-500)' }}>
-                      Price: {planPriceDisplay} {plan?.durationDays ? `(${plan.durationDays} days)` : ''}
+                      Precio: {planPriceDisplay} {plan?.durationDays ? `(${plan.durationDays} días)` : ''}
                     </p>
                   )}
                 </div>
                 <StatusBadge status={membership.status} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-neutral-200)' }}>
+              <div className="form-grid-2" style={{ paddingTop: '1rem', borderTop: '1px solid var(--color-neutral-200)' }}>
                 <div>
                   <span style={{ fontSize: '0.75rem', color: 'var(--color-neutral-500)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <Calendar size={14} /> Start Date
+                    <Calendar size={14} /> Fecha de Inicio
                   </span>
                   <strong style={{ fontSize: '1rem', color: 'var(--color-neutral-800)' }}>
                     {membership.startDate ? formatDateForDisplay(membership.startDate) : '—'}
@@ -116,7 +116,7 @@ export const ClientDashboardPage: React.FC = () => {
 
                 <div>
                   <span style={{ fontSize: '0.75rem', color: 'var(--color-neutral-500)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <Calendar size={14} /> End Date
+                    <Calendar size={14} /> Fecha de Vencimiento
                   </span>
                   <strong style={{ fontSize: '1rem', color: 'var(--color-neutral-800)' }}>
                     {membership.endDate ? formatDateForDisplay(membership.endDate) : '—'}
@@ -131,7 +131,7 @@ export const ClientDashboardPage: React.FC = () => {
                     size="sm"
                     onClick={() => setShowCancelModal(true)}
                   >
-                    Cancel Membership
+                    Cancelar Membresía
                   </Button>
                 </div>
               )}
@@ -140,14 +140,14 @@ export const ClientDashboardPage: React.FC = () => {
             <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
               <UserCheck size={48} style={{ color: 'var(--color-neutral-300)', marginBottom: '0.5rem' }} />
               <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-neutral-700)' }}>
-                No active membership
+                Sin membresía activa
               </h4>
               <p style={{ fontSize: '0.875rem', color: 'var(--color-neutral-500)', marginBottom: '1.25rem' }}>
-                You do not have an active gym membership at the moment.
+                Actualmente no tienes una membresía activa en el gimnasio.
               </p>
               <Link to="/client/plans">
                 <Button variant="primary" icon={<CreditCard size={16} />}>
-                  View Available Plans
+                  Ver Planes Disponibles
                 </Button>
               </Link>
             </div>
@@ -158,14 +158,14 @@ export const ClientDashboardPage: React.FC = () => {
       <Modal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
-        title="Cancel Membership Warning"
+        title="Advertencia de Cancelación de Membresía"
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
             <Button variant="secondary" onClick={() => setShowCancelModal(false)} disabled={cancelling}>
-              Keep Membership
+              Conservar Membresía
             </Button>
             <Button variant="danger" onClick={handleCancelMembership} isLoading={cancelling}>
-              Confirm Cancellation
+              Confirmar Cancelación
             </Button>
           </div>
         }
@@ -174,10 +174,10 @@ export const ClientDashboardPage: React.FC = () => {
           <AlertTriangle size={32} style={{ color: 'var(--color-danger)', flexShrink: 0 }} />
           <div>
             <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--color-neutral-900)' }}>
-              Are you sure you want to cancel your current membership?
+              ¿Estás seguro de que deseas cancelar tu membresía actual?
             </p>
             <p style={{ fontSize: '0.875rem', color: 'var(--color-neutral-600)', marginTop: '0.5rem' }}>
-              Cancelling your active membership (<strong>{planTitle}</strong>) will remove facility access privileges upon confirmation.
+              Al cancelar tu membresía activa (<strong>{planTitle}</strong>), perderás los privilegios de acceso al gimnasio tras confirmar.
             </p>
             {cancelError && <div className="error-box" style={{ marginTop: '0.75rem' }}>{cancelError}</div>}
           </div>

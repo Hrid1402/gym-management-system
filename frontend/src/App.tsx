@@ -40,7 +40,7 @@ const RootRedirect: React.FC = () => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return <InitialAppLoader message="Connecting to GymManager server..." subtext="The server may take a few seconds to respond on initial cold start." />;
+    return <InitialAppLoader message="Conectando con el servidor..." subtext="El servidor puede demorar unos segundos en responder al inicio." />;
   }
 
   if (!user) {

@@ -35,14 +35,14 @@ export const ClientPlansPage: React.FC = () => {
           const activeMem = await membershipService.getActiveClientMembership(targetId);
           if (activeMem && (activeMem.status === 'ACTIVE' || activeMem.status === 'PENDING')) {
             setHasActiveMembership(true);
-            setActivePlanName(activeMem.planName || 'Current Plan');
+            setActivePlanName(activeMem.planName || 'Plan Actual');
           }
         } catch {
           // ignore error check
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Unable to load membership plans');
+      setError(err.message || 'No se pudieron cargar los planes de membresía');
     } finally {
       setLoading(false);
     }
@@ -52,14 +52,14 @@ export const ClientPlansPage: React.FC = () => {
     fetchPlans();
   }, [client, user]);
 
-  if (loading) return <LoadingState message="Loading active membership plans..." />;
+  if (loading) return <LoadingState message="Cargando planes de membresía disponibles..." />;
   if (error) return <ErrorState message={error} onRetry={fetchPlans} />;
 
   return (
     <div>
       <PageHeader
-        title="Membership Plans"
-        subtitle="Choose a plan that fits your workout schedule"
+        title="Planes de Membresía"
+        subtitle="Elige el plan que mejor se adapte a tu rutina de entrenamiento"
       />
 
       {hasActiveMembership && (
@@ -79,14 +79,14 @@ export const ClientPlansPage: React.FC = () => {
         >
           <AlertCircle size={20} style={{ flexShrink: 0 }} />
           <div>
-            <strong>Active Membership Detected:</strong> You already have an active gym membership (
-            <strong>{activePlanName}</strong>). You can browse available plans below, but cannot enroll in a new plan while an active membership exists.
+            <strong>Membresía Activa Detectada:</strong> Ya tienes una membresía activa (
+            <strong>{activePlanName}</strong>). Puedes explorar los planes a continuación, pero no puedes inscribirte en un nuevo plan mientras tengas una membresía vigente.
           </div>
         </div>
       )}
 
       {plans.length === 0 ? (
-        <EmptyState title="No plans available" description="There are currently no active membership plans offered." />
+        <EmptyState title="No hay planes disponibles" description="Actualmente no hay planes de membresía activos disponibles." />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
           {plans.map((plan) => (
@@ -101,7 +101,7 @@ export const ClientPlansPage: React.FC = () => {
                       ${plan.price}
                     </span>
                     <span style={{ fontSize: '0.875rem', color: 'var(--color-neutral-500)' }}>
-                      / {plan.durationDays} days
+                      / {plan.durationDays} días
                     </span>
                   </div>
                 </div>
@@ -110,15 +110,15 @@ export const ClientPlansPage: React.FC = () => {
                   <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-neutral-700)' }}>
                       <Check size={16} style={{ color: 'var(--color-success)' }} />
-                      Full gym facility access
+                      Acceso completo a instalaciones
                     </li>
                     <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-neutral-700)' }}>
                       <Calendar size={16} style={{ color: 'var(--color-primary)' }} />
-                      Duration: {plan.durationDays} Days
+                      Duración: {plan.durationDays} Días
                     </li>
                     <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-neutral-700)' }}>
                       <Check size={16} style={{ color: 'var(--color-success)' }} />
-                      No contract hidden fees
+                      Sin cargos ocultos
                     </li>
                   </ul>
                 </div>
@@ -130,7 +130,7 @@ export const ClientPlansPage: React.FC = () => {
                     disabled={hasActiveMembership}
                     onClick={() => !hasActiveMembership && navigate(`/client/membership?planId=${plan.id}`)}
                   >
-                    {hasActiveMembership ? 'Membership Active' : 'Select Plan'}
+                    {hasActiveMembership ? 'Membresía Activa' : 'Seleccionar Plan'}
                   </Button>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Dumbbell } from 'lucide-react';
+import { APP_NAME, APP_FOOTER_TEXT } from '../config/appConfig';
 
 export const AuthLayout: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ export const AuthLayout: React.FC = () => {
           alignItems: 'center',
           gap: '0.75rem',
           marginBottom: '1.5rem',
+          textAlign: 'center',
         }}
       >
         <div
@@ -33,12 +35,13 @@ export const AuthLayout: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            flexShrink: 0,
           }}
         >
           <Dumbbell size={24} />
         </div>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-neutral-900)' }}>
-          Gym Management System
+          {APP_NAME}
         </h1>
       </div>
 
@@ -56,8 +59,8 @@ export const AuthLayout: React.FC = () => {
         <Outlet />
       </div>
 
-      <p style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: 'var(--color-neutral-500)' }}>
-        Gym Management System
+      <p style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: 'var(--color-neutral-500)', textAlign: 'center' }}>
+        {APP_FOOTER_TEXT}
       </p>
     </div>
   );

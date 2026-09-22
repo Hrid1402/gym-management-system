@@ -15,8 +15,8 @@ export const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError('Please fill in all fields');
+    if (!email.trim() || !password) {
+      setError('Por favor completa todos los campos.');
       return;
     }
 
@@ -27,7 +27,7 @@ export const LoginPage: React.FC = () => {
       await login({ email, password });
       navigate('/');
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(err.message || 'Error al iniciar sesión. Por favor verifica tus credenciales.');
     } finally {
       setLoading(false);
     }
@@ -36,26 +36,26 @@ export const LoginPage: React.FC = () => {
   return (
     <div>
       <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem', color: 'var(--color-neutral-900)' }}>
-        Welcome Back
+        ¡Bienvenido de nuevo!
       </h2>
       <p style={{ fontSize: '0.875rem', color: 'var(--color-neutral-500)', marginBottom: '1.5rem' }}>
-        Log in to access your dashboard
+        Ingresa a tu cuenta para acceder al sistema
       </p>
 
       {error && <div className="error-box">{error}</div>}
 
       <form onSubmit={handleSubmit}>
         <Input
-          label="Email Address"
+          label="Correo Electrónico"
           type="email"
-          placeholder="your.email@example.com"
+          placeholder="tu.correo@ejemplo.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
 
         <Input
-          label="Password"
+          label="Contraseña"
           type="password"
           placeholder="••••••••"
           value={password}
@@ -65,19 +65,19 @@ export const LoginPage: React.FC = () => {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.25rem' }}>
           <Link to="/forgot-password" style={{ fontSize: '0.875rem' }}>
-            Forgot password?
+            ¿Olvidaste tu contraseña?
           </Link>
         </div>
 
         <Button type="submit" variant="primary" fullWidth isLoading={loading}>
-          Log In
+          Iniciar Sesión
         </Button>
       </form>
 
       <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--color-neutral-600)' }}>
-        Don't have an account?{' '}
+        ¿No tienes una cuenta?{' '}
         <Link to="/register" style={{ fontWeight: 600 }}>
-          Register here
+          Regístrate aquí
         </Link>
       </div>
     </div>

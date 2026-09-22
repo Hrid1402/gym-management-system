@@ -10,6 +10,7 @@ import { StatusBadge } from '../../components/ui/StatusBadge';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { CheckCircle, XCircle, UserPlus, Info } from 'lucide-react';
+import { formatDateForDisplay } from '../../utils/dateUtils';
 
 export const AdminUsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -36,7 +37,7 @@ export const AdminUsersPage: React.FC = () => {
       const data = await userService.getUsers();
       setUsers(data);
     } catch (err) {
-      console.error('Failed to load staff users:', err);
+      console.error('Error al cargar personal:', err);
     } finally {
       setLoading(false);
     }
@@ -48,6 +49,15 @@ export const AdminUsersPage: React.FC = () => {
 
   const handleCreateStaff = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name.trim() || !email.trim() || !password) {
+      setCreateError('Por favor completa todos los campos requeridos.');
+      return;
+    }
+    if (password.length < 6) {
+      setCreateError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
     setSubmitting(true);
     setCreateError(null);
 
@@ -65,7 +75,7 @@ export const AdminUsersPage: React.FC = () => {
       setRole('RECEPTIONIST');
       await fetchUsers();
     } catch (err: any) {
-      setCreateError(err.message || 'Failed to create staff account');
+      setCreateError(err.message || 'Error al crear la cuenta del personal');
     } finally {
       setSubmitting(false);
     }
@@ -77,7 +87,7 @@ export const AdminUsersPage: React.FC = () => {
       await userService.updateUserRole(user.id, newRole);
       await fetchUsers();
     } catch (err: any) {
-      alert(err.message || 'Failed to update user role');
+      alert(err.message || 'Error al actualizar el rol del usuario');
     }
   };
 
@@ -90,7 +100,7 @@ export const AdminUsersPage: React.FC = () => {
       }
       await fetchUsers();
     } catch (err: any) {
-      alert(err.message || 'Failed to update user status');
+      alert(err.message || 'Error al actualizar el estado del usuario');
     }
   };
 
@@ -105,20 +115,20 @@ export const AdminUsersPage: React.FC = () => {
 
   const isFiltered = searchTerm.trim() !== '' || roleFilter !== 'ALL' || statusFilter !== 'ALL';
 
-  if (loading) return <LoadingState message="Loading staff users..." />;
+  if (loading) return <LoadingState message="Cargando usuarios de personal..." />;
 
   return (
     <div>
       <PageHeader
-        title="Staff User Management"
-        subtitle="Manage internal staff accounts (Admins, Receptionists), update roles, and grant/revoke access. Click any staff member to view full details."
+        title="Gestión de Personal"
+        subtitle="Administra las cuentas del personal interno (Gerentes, Recepcionistas), actualiza roles y gestiona accesos"
         action={
           <Button
             variant="primary"
             icon={<UserPlus size={16} />}
             onClick={() => setShowCreateModal(true)}
           >
-            Create Staff Member
+            Registrar Personal
           </Button>
         }
       />
@@ -139,15 +149,15 @@ export const AdminUsersPage: React.FC = () => {
                 border: isFiltered ? '1px solid #91d5ff' : '1px solid var(--color-neutral-300)',
               }}
             >
-              {filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'} {isFiltered ? `(filtered from ${users.length})` : 'total'}
+              {filteredUsers.length} {filteredUsers.length === 1 ? 'usuario' : 'usuarios'} {isFiltered ? `(filtrados de ${users.length})` : 'total'}
             </span>
           </div>
 
           {/* Filter Controls */}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <div style={{ width: '220px' }}>
+            <div style={{ minWidth: '180px', flex: '1 1 180px' }}>
               <Input
-                placeholder="Search Name or Email..."
+                placeholder="Buscar Nombre o Correo..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -158,9 +168,9 @@ export const AdminUsersPage: React.FC = () => {
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
                 options={[
-                  { value: 'ALL', label: 'All Roles' },
-                  { value: 'RECEPTIONIST', label: 'Receptionist' },
-                  { value: 'ADMIN', label: 'Admin (Manager)' },
+                  { value: 'ALL', label: 'Todos los Roles' },
+                  { value: 'RECEPTIONIST', label: 'Recepcionista' },
+                  { value: 'ADMIN', label: 'Gerente' },
                 ]}
               />
             </div>
@@ -170,9 +180,9 @@ export const AdminUsersPage: React.FC = () => {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 options={[
-                  { value: 'ALL', label: 'All Statuses' },
-                  { value: 'ACTIVE', label: 'Active Users' },
-                  { value: 'INACTIVE', label: 'Inactive' },
+                  { value: 'ALL', label: 'Todos los Estados' },
+                  { value: 'ACTIVE', label: 'Usuarios Activos' },
+                  { value: 'INACTIVE', label: 'Inactivos' },
                 ]}
               />
             </div>
@@ -182,20 +192,20 @@ export const AdminUsersPage: React.FC = () => {
 
       {filteredUsers.length === 0 ? (
         <EmptyState
-          title="No staff users found"
-          description="No staff accounts match your current filter criteria."
+          title="No se encontraron usuarios de personal"
+          description="No hay cuentas de personal que coincidan con la búsqueda."
         />
       ) : (
         <div className="table-container">
           <table className="table">
             <thead>
               <tr>
-                <th>User Name</th>
-                <th>Email</th>
-                <th>Current Role</th>
-                <th>Status</th>
-                <th>Change Role</th>
-                <th>Actions</th>
+                <th>Nombre</th>
+                <th>Correo Electrónico</th>
+                <th>Rol Actual</th>
+                <th>Estado</th>
+                <th>Cambiar Rol</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -204,7 +214,6 @@ export const AdminUsersPage: React.FC = () => {
                   key={u.id}
                   style={{ cursor: 'pointer' }}
                   onClick={(e) => {
-                    // Avoid opening modal if clicking dropdown or buttons directly
                     const target = e.target as HTMLElement;
                     if (target.tagName === 'SELECT' || target.tagName === 'BUTTON' || target.closest('button') || target.closest('select')) {
                       return;
@@ -234,19 +243,19 @@ export const AdminUsersPage: React.FC = () => {
                       value={u.role}
                       onChange={(e) => handleRoleChange(u, e.target.value as UserRole)}
                     >
-                      <option value="ADMIN">ADMIN (Manager)</option>
-                      <option value="RECEPTIONIST">RECEPTIONIST</option>
+                      <option value="ADMIN">Gerente</option>
+                      <option value="RECEPTIONIST">Recepcionista</option>
                     </select>
                   </td>
                   <td onClick={(e) => e.stopPropagation()}>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                       <Button
                         variant="secondary"
                         size="sm"
                         icon={<Info size={14} />}
                         onClick={() => setSelectedStaff(u)}
                       >
-                        Details
+                        Detalles
                       </Button>
                       <Button
                         variant={u.isActive ? 'outline-danger' : 'secondary'}
@@ -254,7 +263,7 @@ export const AdminUsersPage: React.FC = () => {
                         icon={u.isActive ? <XCircle size={14} /> : <CheckCircle size={14} />}
                         onClick={() => handleToggleStatus(u)}
                       >
-                        {u.isActive ? 'Deactivate' : 'Activate'}
+                        {u.isActive ? 'Desactivar' : 'Activar'}
                       </Button>
                     </div>
                   </td>
@@ -270,10 +279,10 @@ export const AdminUsersPage: React.FC = () => {
         <Modal
           isOpen={!!selectedStaff}
           onClose={() => setSelectedStaff(null)}
-          title="Staff Member Profile & Details"
+          title="Perfil y Detalles del Miembro del Personal"
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid var(--color-neutral-200)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid var(--color-neutral-200)', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-neutral-900)' }}>
                   {selectedStaff.name}
@@ -286,10 +295,10 @@ export const AdminUsersPage: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.875rem' }}>
+            <div className="form-grid-2" style={{ fontSize: '0.875rem' }}>
               <div style={{ background: 'var(--color-neutral-50)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-neutral-200)' }}>
                 <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--color-neutral-500)', fontWeight: 600, marginBottom: '0.25rem' }}>
-                  User Database ID
+                  ID de Usuario
                 </div>
                 <div style={{ fontFamily: 'monospace', color: 'var(--color-neutral-800)', wordBreak: 'break-all' }}>
                   {selectedStaff.id}
@@ -298,35 +307,35 @@ export const AdminUsersPage: React.FC = () => {
 
               <div style={{ background: 'var(--color-neutral-50)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-neutral-200)' }}>
                 <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--color-neutral-500)', fontWeight: 600, marginBottom: '0.25rem' }}>
-                  Account Type
-                </div>
-                <div style={{ color: 'var(--color-neutral-800)', textTransform: 'capitalize', fontWeight: 600 }}>
-                  Internal {selectedStaff.type || 'Staff'} Account
-                </div>
-              </div>
-
-              <div style={{ background: 'var(--color-neutral-50)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-neutral-200)' }}>
-                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--color-neutral-500)', fontWeight: 600, marginBottom: '0.25rem' }}>
-                  System Role
+                  Tipo de Cuenta
                 </div>
                 <div style={{ color: 'var(--color-neutral-800)', fontWeight: 600 }}>
-                  {selectedStaff.role === 'ADMIN' ? 'Manager (Admin)' : selectedStaff.role}
+                  Cuenta Interna de Personal
                 </div>
               </div>
 
               <div style={{ background: 'var(--color-neutral-50)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-neutral-200)' }}>
                 <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--color-neutral-500)', fontWeight: 600, marginBottom: '0.25rem' }}>
-                  Account Created
+                  Rol del Sistema
+                </div>
+                <div style={{ color: 'var(--color-neutral-800)', fontWeight: 600 }}>
+                  {selectedStaff.role === 'ADMIN' ? 'Gerente' : 'Recepcionista'}
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--color-neutral-50)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-neutral-200)' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--color-neutral-500)', fontWeight: 600, marginBottom: '0.25rem' }}>
+                  Fecha de Registro
                 </div>
                 <div style={{ color: 'var(--color-neutral-800)' }}>
-                  {selectedStaff.createdAt ? new Date(selectedStaff.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                  {selectedStaff.createdAt ? formatDateForDisplay(selectedStaff.createdAt) : 'N/A'}
                 </div>
               </div>
             </div>
 
             <div style={{ marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid var(--color-neutral-200)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-neutral-700)' }}>Change Role:</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-neutral-700)' }}>Cambiar Rol:</span>
                 <select
                   className="form-control"
                   style={{ width: 'auto', padding: '0.35rem 0.6rem', fontSize: '0.875rem' }}
@@ -337,12 +346,12 @@ export const AdminUsersPage: React.FC = () => {
                     setSelectedStaff({ ...selectedStaff, role: newRole });
                   }}
                 >
-                  <option value="ADMIN">ADMIN (Manager)</option>
-                  <option value="RECEPTIONIST">RECEPTIONIST</option>
+                  <option value="ADMIN">Gerente</option>
+                  <option value="RECEPTIONIST">Recepcionista</option>
                 </select>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                 <Button
                   variant={selectedStaff.isActive ? 'outline-danger' : 'secondary'}
                   size="sm"
@@ -352,10 +361,10 @@ export const AdminUsersPage: React.FC = () => {
                     setSelectedStaff({ ...selectedStaff, isActive: !selectedStaff.isActive });
                   }}
                 >
-                  {selectedStaff.isActive ? 'Deactivate Staff Account' : 'Activate Staff Account'}
+                  {selectedStaff.isActive ? 'Desactivar Cuenta' : 'Activar Cuenta'}
                 </Button>
                 <Button variant="secondary" size="sm" onClick={() => setSelectedStaff(null)}>
-                  Close
+                  Cerrar
                 </Button>
               </div>
             </div>
@@ -367,44 +376,44 @@ export const AdminUsersPage: React.FC = () => {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Create New Staff Member"
+        title="Registrar Nuevo Miembro del Personal"
       >
         <form onSubmit={handleCreateStaff}>
           {createError && <div className="error-box" style={{ marginBottom: '1rem' }}>{createError}</div>}
 
           <Input
-            label="Full Name *"
+            label="Nombre Completo *"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Maria Gonzalez"
+            placeholder="Ej: María González"
             required
           />
 
           <Input
-            label="Email Address *"
+            label="Correo Electrónico *"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="e.g. maria@gym.com"
+            placeholder="Ej: maria@gimnasio.com"
             required
           />
 
           <Input
-            label="Initial Password *"
+            label="Contraseña Inicial *"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Minimum 6 characters"
+            placeholder="Mínimo 6 caracteres"
             required
           />
 
           <Select
-            label="Staff Role *"
+            label="Rol del Personal *"
             value={role}
             onChange={(e) => setRole(e.target.value as UserRole)}
             options={[
-              { value: 'RECEPTIONIST', label: 'Receptionist' },
-              { value: 'ADMIN', label: 'Admin (Manager)' },
+              { value: 'RECEPTIONIST', label: 'Recepcionista' },
+              { value: 'ADMIN', label: 'Gerente' },
             ]}
             required
           />
@@ -416,10 +425,10 @@ export const AdminUsersPage: React.FC = () => {
               onClick={() => setShowCreateModal(false)}
               disabled={submitting}
             >
-              Cancel
+              Cancelar
             </Button>
             <Button type="submit" variant="primary" isLoading={submitting}>
-              Create Staff Account
+              Crear Cuenta de Personal
             </Button>
           </div>
         </form>

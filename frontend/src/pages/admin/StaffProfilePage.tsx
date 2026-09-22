@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { UserCheck, KeyRound, CheckCircle, AlertCircle } from 'lucide-react';
+import { ROLE_LABELS } from '../../config/appConfig';
 
 export const StaffProfilePage: React.FC = () => {
   const { user, isLoading, updateProfile, changePassword } = useAuth();
@@ -31,7 +32,7 @@ export const StaffProfilePage: React.FC = () => {
   }, [user]);
 
   if (isLoading) {
-    return <LoadingState message="Loading account settings..." />;
+    return <LoadingState message="Cargando configuración de la cuenta..." />;
   }
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -45,9 +46,9 @@ export const StaffProfilePage: React.FC = () => {
         name,
         email,
       });
-      setProfileSuccess('Account details updated successfully!');
+      setProfileSuccess('¡Datos de la cuenta actualizados exitosamente!');
     } catch (err: any) {
-      setProfileError(err.message || 'Failed to update profile details');
+      setProfileError(err.message || 'Error al actualizar los datos del perfil');
     } finally {
       setSavingProfile(false);
     }
@@ -56,11 +57,11 @@ export const StaffProfilePage: React.FC = () => {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword.length < 6) {
-      setPasswordError('Password must be at least 6 characters.');
+      setPasswordError('La contraseña debe tener al menos 6 caracteres.');
       return;
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError('Passwords do not match.');
+      setPasswordError('Las contraseñas no coinciden.');
       return;
     }
 
@@ -70,23 +71,25 @@ export const StaffProfilePage: React.FC = () => {
 
     try {
       await changePassword(newPassword);
-      setPasswordSuccess('Password updated successfully!');
+      setPasswordSuccess('¡Contraseña actualizada exitosamente!');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err: any) {
-      setPasswordError(err.message || 'Failed to change password');
+      setPasswordError(err.message || 'Error al cambiar la contraseña');
     } finally {
       setChangingPassword(false);
     }
   };
 
+  const userRoleLabel = user ? (ROLE_LABELS[user.role] || user.role) : '';
+
   return (
     <div>
-      <PageHeader title="Staff Settings & Profile" subtitle="Manage your staff account information and password" />
+      <PageHeader title="Perfil y Configuración de Personal" subtitle="Gestiona tu información de personal y contraseña" />
 
       <div style={{ maxWidth: '650px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {/* Profile Card */}
-        <Card title="Staff Profile Details">
+        <Card title="Detalles de Perfil de Personal">
           <div
             style={{
               display: 'flex',
@@ -103,7 +106,7 @@ export const StaffProfilePage: React.FC = () => {
           >
             <UserCheck size={20} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
             <div>
-              Role: <strong>{user?.role}</strong>. Updates to email will sync automatically with your login account.
+              Rol actual: <strong>{userRoleLabel}</strong>. Las modificaciones en tu correo se sincronizarán con tu inicio de sesión.
             </div>
           </div>
 
@@ -149,14 +152,14 @@ export const StaffProfilePage: React.FC = () => {
 
           <form onSubmit={handleSaveProfile}>
             <Input
-              label="Full Name *"
+              label="Nombre Completo"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
 
             <Input
-              label="Email Address *"
+              label="Correo Electrónico"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -165,18 +168,18 @@ export const StaffProfilePage: React.FC = () => {
 
             <div style={{ marginTop: '1.25rem' }}>
               <Button type="submit" variant="primary" isLoading={savingProfile}>
-                Save Profile Changes
+                Guardar Cambios
               </Button>
             </div>
           </form>
         </Card>
 
         {/* Change Password Card */}
-        <Card title="Change Password">
+        <Card title="Cambiar Contraseña">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
             <KeyRound size={20} style={{ color: 'var(--color-neutral-600)' }} />
             <span style={{ fontSize: '0.875rem', color: 'var(--color-neutral-600)' }}>
-              Update your account access password below.
+              Actualiza tu contraseña de acceso a continuación.
             </span>
           </div>
 
@@ -222,18 +225,18 @@ export const StaffProfilePage: React.FC = () => {
 
           <form onSubmit={handleChangePassword}>
             <Input
-              label="New Password *"
+              label="Nueva Contraseña"
               type="password"
-              placeholder="Minimum 6 characters"
+              placeholder="Mínimo 6 caracteres"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
             />
 
             <Input
-              label="Confirm New Password *"
+              label="Confirmar Nueva Contraseña"
               type="password"
-              placeholder="Re-enter new password"
+              placeholder="Vuelve a ingresar la contraseña"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -241,7 +244,7 @@ export const StaffProfilePage: React.FC = () => {
 
             <div style={{ marginTop: '1.25rem' }}>
               <Button type="submit" variant="secondary" isLoading={changingPassword}>
-                Update Password
+                Actualizar Contraseña
               </Button>
             </div>
           </form>

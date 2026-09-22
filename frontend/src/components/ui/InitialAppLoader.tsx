@@ -1,5 +1,6 @@
 import React from 'react';
 import { Dumbbell, Loader2 } from 'lucide-react';
+import { APP_NAME } from '../../config/appConfig';
 
 interface InitialAppLoaderProps {
   message?: string;
@@ -7,8 +8,8 @@ interface InitialAppLoaderProps {
 }
 
 export const InitialAppLoader: React.FC<InitialAppLoaderProps> = ({
-  message = 'Connecting to GymManager server...',
-  subtext = 'Please wait a moment if the backend is waking up from sleep.',
+  message = `Conectando con el servidor de ${APP_NAME}...`,
+  subtext = 'Por favor espera unos segundos mientras el servidor responde.',
 }) => {
   return (
     <div
@@ -33,7 +34,7 @@ export const InitialAppLoader: React.FC<InitialAppLoaderProps> = ({
       >
         <Dumbbell size={36} style={{ color: 'var(--color-primary, #1890ff)' }} />
         <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--color-neutral-900, #0f172a)' }}>
-          GymManager
+          {APP_NAME}
         </span>
       </div>
 

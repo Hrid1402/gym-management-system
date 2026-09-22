@@ -26,7 +26,7 @@ export class MockClientApi implements IClientApi {
     const store = getMockStore();
     const client = store.clients.find((c) => c.id === id);
     if (!client) {
-      throw createApiError(`Client with ID ${id} not found`, 404);
+      throw createApiError(`Cliente con ID ${id} no encontrado`, 404);
     }
 
     // Attach active or pending membership if exists
@@ -55,7 +55,7 @@ export class MockClientApi implements IClientApi {
     const store = getMockStore();
     const index = store.clients.findIndex((c) => c.id === id);
     if (index === -1) {
-      throw createApiError(`Client with ID ${id} not found`, 404);
+      throw createApiError(`Cliente con ID ${id} no encontrado`, 404);
     }
 
     const currentClient = store.clients[index];
@@ -79,7 +79,7 @@ export class MockClientApi implements IClientApi {
     const store = getMockStore();
     const index = store.clients.findIndex((c) => c.id === id);
     if (index === -1) {
-      throw createApiError(`Client with ID ${id} not found`, 404);
+      throw createApiError(`Cliente con ID ${id} no encontrado`, 404);
     }
 
     const client = store.clients[index];

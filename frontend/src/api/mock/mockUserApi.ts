@@ -20,7 +20,7 @@ export class MockUserApi implements IUserApi {
     const store = getMockStore();
 
     if (store.users.some((u) => u.email.toLowerCase() === data.email.toLowerCase())) {
-      throw createApiError(`A user with email ${data.email} already exists`, 400);
+      throw createApiError(`Ya existe un usuario registrado con el correo ${data.email}`, 400);
     }
 
     const newUser: User = {
@@ -43,7 +43,7 @@ export class MockUserApi implements IUserApi {
     const store = getMockStore();
     const index = store.users.findIndex((u) => u.id === id);
     if (index === -1) {
-      throw createApiError(`User with ID ${id} not found`, 404);
+      throw createApiError(`Usuario con ID ${id} no encontrado`, 404);
     }
 
     if (data.name !== undefined) store.users[index].name = data.name;
@@ -59,11 +59,11 @@ export class MockUserApi implements IUserApi {
     const store = getMockStore();
     const index = store.users.findIndex((u) => u.id === id);
     if (index === -1) {
-      throw createApiError(`User with ID ${id} not found`, 404);
+      throw createApiError(`Usuario con ID ${id} no encontrado`, 404);
     }
 
     if (role === 'CLIENT') {
-      throw createApiError('Client users are managed through the Client entity', 400);
+      throw createApiError('Los usuarios de tipo cliente se gestionan a través de la entidad Cliente', 400);
     }
 
     store.users[index].role = role;
@@ -77,7 +77,7 @@ export class MockUserApi implements IUserApi {
     const store = getMockStore();
     const index = store.users.findIndex((u) => u.id === id);
     if (index === -1) {
-      throw createApiError(`User with ID ${id} not found`, 404);
+      throw createApiError(`Usuario con ID ${id} no encontrado`, 404);
     }
 
     store.users[index].isActive = true;
@@ -91,7 +91,7 @@ export class MockUserApi implements IUserApi {
     const store = getMockStore();
     const index = store.users.findIndex((u) => u.id === id);
     if (index === -1) {
-      throw createApiError(`User with ID ${id} not found`, 404);
+      throw createApiError(`Usuario con ID ${id} no encontrado`, 404);
     }
 
     store.users[index].isActive = false;

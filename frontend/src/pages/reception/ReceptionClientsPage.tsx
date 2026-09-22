@@ -26,7 +26,7 @@ export const ReceptionClientsPage: React.FC = () => {
       setClients(cList);
       setMemberships(mList);
     } catch (err) {
-      console.error('Failed to load client list:', err);
+      console.error('Error al cargar la lista de clientes:', err);
     } finally {
       setLoading(false);
     }
@@ -54,17 +54,17 @@ export const ReceptionClientsPage: React.FC = () => {
     return 'NO MEMBERSHIP';
   };
 
-  if (loading) return <LoadingState message="Loading client directory..." />;
+  if (loading) return <LoadingState message="Cargando directorio de clientes..." />;
 
   return (
     <div>
       <PageHeader
-        title="Clients Directory"
-        subtitle="Manage registered clients, search profiles, and register new members"
+        title="Directorio de Clientes"
+        subtitle="Gestiona clientes registrados, busca perfiles e inscribe nuevos miembros"
         action={
           <Link to="/reception/clients/new">
             <Button variant="primary" icon={<UserPlus size={16} />}>
-              Register New Client
+              Registrar Nuevo Cliente
             </Button>
           </Link>
         }
@@ -72,7 +72,7 @@ export const ReceptionClientsPage: React.FC = () => {
 
       <div style={{ marginBottom: '1.25rem', maxWidth: '400px' }}>
         <Input
-          placeholder="Search by Name, DNI, or Phone..."
+          placeholder="Buscar por Nombre, DNI o Teléfono..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -80,21 +80,21 @@ export const ReceptionClientsPage: React.FC = () => {
 
       {filteredClients.length === 0 ? (
         <EmptyState
-          title="No clients found"
-          description={searchTerm ? `No clients matching "${searchTerm}"` : 'No clients registered yet.'}
+          title="No se encontraron clientes"
+          description={searchTerm ? `No hay clientes que coincidan con "${searchTerm}"` : 'Aún no hay clientes registrados.'}
         />
       ) : (
         <div className="table-container">
           <table className="table">
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Nombre</th>
                 <th>DNI</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th>Account State</th>
-                <th>Membership</th>
-                <th>Actions</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+                <th>Estado Cuenta</th>
+                <th>Membresía</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -117,20 +117,20 @@ export const ReceptionClientsPage: React.FC = () => {
                       <StatusBadge status={memStatus === 'NO MEMBERSHIP' ? undefined : memStatus} />
                       {memStatus === 'NO MEMBERSHIP' && (
                         <span style={{ fontSize: '0.75rem', color: 'var(--color-neutral-400)' }}>
-                          No Active Membership
+                          Sin Membresía Activa
                         </span>
                       )}
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <Link to={`/reception/clients/${client.id}`}>
                           <Button variant="secondary" size="sm" icon={<Eye size={14} />}>
-                            Details
+                            Detalles
                           </Button>
                         </Link>
                         <Link to={`/reception/clients/${client.id}/edit`}>
                           <Button variant="secondary" size="sm" icon={<Edit size={14} />}>
-                            Edit
+                            Editar
                           </Button>
                         </Link>
                       </div>

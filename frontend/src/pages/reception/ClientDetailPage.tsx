@@ -32,7 +32,7 @@ export const ClientDetailPage: React.FC = () => {
       const c = await clientService.getClient(id);
       setClient(c);
     } catch (err: any) {
-      setError(err.message || 'Failed to load client details');
+      setError(err.message || 'Error al cargar los detalles del cliente');
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export const ClientDetailPage: React.FC = () => {
       setIsDeleteModalOpen(false);
       navigate('/reception/clients');
     } catch (err: any) {
-      alert(err.message || 'Failed to delete client');
+      alert(err.message || 'Error al eliminar el cliente');
     } finally {
       setDeleting(false);
     }
@@ -58,21 +58,21 @@ export const ClientDetailPage: React.FC = () => {
 
   const handleCancelMembership = async () => {
     if (!client?.currentMembership) return;
-    if (!window.confirm('Are you sure you want to cancel this active/pending membership?')) return;
+    if (!window.confirm('¿Estás seguro de que deseas cancelar esta membresía?')) return;
 
     setCancellingMem(true);
     try {
       await membershipService.cancelMembership(client.currentMembership.id);
       await fetchClientDetails();
     } catch (err: any) {
-      alert(err.message || 'Failed to cancel membership');
+      alert(err.message || 'Error al cancelar la membresía');
     } finally {
       setCancellingMem(false);
     }
   };
 
-  if (loading) return <LoadingState message="Loading client details..." />;
-  if (error || !client) return <ErrorState message={error || 'Client not found'} onRetry={fetchClientDetails} />;
+  if (loading) return <LoadingState message="Cargando detalles del cliente..." />;
+  if (error || !client) return <ErrorState message={error || 'Cliente no encontrado'} onRetry={fetchClientDetails} />;
 
   const currentMem = client.currentMembership;
 
@@ -80,22 +80,22 @@ export const ClientDetailPage: React.FC = () => {
     <div>
       <div style={{ marginBottom: '1rem' }}>
         <Link to="/reception/clients" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.875rem' }}>
-          <ArrowLeft size={16} /> Back to Directory
+          <ArrowLeft size={16} /> Volver al Directorio
         </Link>
       </div>
 
       <PageHeader
         title={`${client.firstName} ${client.lastName}`}
-        subtitle={`Client ID: ${client.id}`}
+        subtitle={`ID de Cliente: ${client.id}`}
         action={
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <Button
               variant="secondary"
               size="sm"
               icon={<Edit size={16} />}
               onClick={() => navigate(`/reception/clients/${client.id}/edit`)}
             >
-              Edit Client
+              Editar Cliente
             </Button>
             <Button
               variant="primary"
@@ -103,7 +103,7 @@ export const ClientDetailPage: React.FC = () => {
               icon={<CreditCard size={16} />}
               onClick={() => navigate(`/reception/memberships/new?clientId=${client.id}`)}
             >
-              Register Membership
+              Registrar Membresía
             </Button>
             <Button
               variant="outline-danger"
@@ -111,7 +111,7 @@ export const ClientDetailPage: React.FC = () => {
               icon={<Trash2 size={16} />}
               onClick={() => setIsDeleteModalOpen(true)}
             >
-              Delete Client
+              Eliminar Cliente
             </Button>
           </div>
         }
@@ -119,7 +119,7 @@ export const ClientDetailPage: React.FC = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
         {/* Client Profile Info Card */}
-        <Card title="Client Profile Details">
+        <Card title="Detalles del Perfil del Cliente">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
               <FileText size={18} style={{ color: 'var(--color-neutral-400)' }} />
@@ -129,35 +129,35 @@ export const ClientDetailPage: React.FC = () => {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
               <Phone size={18} style={{ color: 'var(--color-neutral-400)' }} />
-              <span style={{ color: 'var(--color-neutral-500)' }}>Phone:</span>
+              <span style={{ color: 'var(--color-neutral-500)' }}>Teléfono:</span>
               <strong>{client.phone}</strong>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
               <Mail size={18} style={{ color: 'var(--color-neutral-400)' }} />
-              <span style={{ color: 'var(--color-neutral-500)' }}>Email:</span>
+              <span style={{ color: 'var(--color-neutral-500)' }}>Correo:</span>
               <strong>{client.email || '—'}</strong>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
               <Calendar size={18} style={{ color: 'var(--color-neutral-400)' }} />
-              <span style={{ color: 'var(--color-neutral-500)' }}>Date of Birth:</span>
+              <span style={{ color: 'var(--color-neutral-500)' }}>Fecha de Nacimiento:</span>
               <strong>{formatDateForDisplay(client.dateOfBirth)}</strong>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
               <MapPin size={18} style={{ color: 'var(--color-neutral-400)' }} />
-              <span style={{ color: 'var(--color-neutral-500)' }}>Address:</span>
+              <span style={{ color: 'var(--color-neutral-500)' }}>Dirección:</span>
               <strong>{client.address || '—'}</strong>
             </div>
           </div>
         </Card>
 
         {/* Current Membership Card */}
-        <Card title="Current Active Membership">
+        <Card title="Membresía Activa Actual">
           {currentMem ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <h4 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-neutral-900)' }}>
                   {currentMem.planName}
                 </h4>
@@ -165,17 +165,17 @@ export const ClientDetailPage: React.FC = () => {
               </div>
 
               <p style={{ fontSize: '0.875rem', color: 'var(--color-neutral-500)' }}>
-                Price: ${currentMem.price}
+                Precio: ${currentMem.price}
               </p>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-neutral-200)' }}>
+              <div className="form-grid-2" style={{ paddingTop: '1rem', borderTop: '1px solid var(--color-neutral-200)' }}>
                 <div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-neutral-500)' }}>Start Date</span>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>{currentMem.startDate}</div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--color-neutral-500)' }}>Fecha de Inicio</span>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>{formatDateForDisplay(currentMem.startDate)}</div>
                 </div>
                 <div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-neutral-500)' }}>End Date</span>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>{currentMem.endDate}</div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--color-neutral-500)' }}>Fecha de Vencimiento</span>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>{formatDateForDisplay(currentMem.endDate)}</div>
                 </div>
               </div>
 
@@ -188,7 +188,7 @@ export const ClientDetailPage: React.FC = () => {
                     isLoading={cancellingMem}
                     onClick={handleCancelMembership}
                   >
-                    Cancel Membership
+                    Cancelar Membresía
                   </Button>
                 </div>
               )}
@@ -196,7 +196,7 @@ export const ClientDetailPage: React.FC = () => {
           ) : (
             <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
               <p style={{ fontSize: '0.875rem', color: 'var(--color-neutral-500)', marginBottom: '1rem' }}>
-                This client has no active or pending membership.
+                Este cliente no posee una membresía activa o pendiente.
               </p>
               <Button
                 variant="primary"
@@ -204,7 +204,7 @@ export const ClientDetailPage: React.FC = () => {
                 icon={<CreditCard size={14} />}
                 onClick={() => navigate(`/reception/memberships/new?clientId=${client.id}`)}
               >
-                Register Membership
+                Registrar Membresía
               </Button>
             </div>
           )}
@@ -215,23 +215,23 @@ export const ClientDetailPage: React.FC = () => {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Confirm Permanent Client Deletion"
+        title="Confirmar Eliminación Permanente"
         footer={
           <>
             <Button variant="secondary" onClick={() => setIsDeleteModalOpen(false)}>
-              Cancel
+              Cancelar
             </Button>
             <Button variant="danger" isLoading={deleting} onClick={handleDeleteClient}>
-              Permanently Delete Client
+              Eliminar Cliente Definitivamente
             </Button>
           </>
         }
       >
         <p style={{ fontSize: '0.875rem', color: 'var(--color-neutral-700)' }}>
-          Are you sure you want to permanently delete client <strong>{client.firstName} {client.lastName}</strong>?
+          ¿Estás seguro de que deseas eliminar permanentemente al cliente <strong>{client.firstName} {client.lastName}</strong>?
         </p>
         <p style={{ fontSize: '0.75rem', color: 'var(--color-danger-text)', marginTop: '0.5rem', fontWeight: 600 }}>
-          Warning: This action will permanently remove the client record from the database.
+          Advertencia: Esta acción eliminará definitivamente el registro del cliente de la base de datos.
         </p>
       </Modal>
     </div>

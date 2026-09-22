@@ -8,7 +8,6 @@ import { Button } from '../../components/ui/Button';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { ArrowLeft } from 'lucide-react';
-
 import { formatDateForInput } from '../../utils/dateUtils';
 
 export const EditClientPage: React.FC = () => {
@@ -45,7 +44,7 @@ export const EditClientPage: React.FC = () => {
         address: client.address || '',
       });
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to load client details');
+      setErrorMsg(err.message || 'Error al cargar los datos del cliente');
     } finally {
       setLoading(false);
     }
@@ -73,40 +72,40 @@ export const EditClientPage: React.FC = () => {
       });
       navigate(`/reception/clients/${id}`);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to update client.');
+      setErrorMsg(err.message || 'Error al actualizar el cliente.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) return <LoadingState message="Loading client details for edit..." />;
+  if (loading) return <LoadingState message="Cargando datos del cliente..." />;
   if (errorMsg && !formData.firstName) return <ErrorState message={errorMsg} onRetry={fetchClient} />;
 
   return (
     <div>
       <div style={{ marginBottom: '1rem' }}>
         <Link to={`/reception/clients/${id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.875rem' }}>
-          <ArrowLeft size={16} /> Back to Details
+          <ArrowLeft size={16} /> Volver a Detalles
         </Link>
       </div>
 
-      <PageHeader title="Edit Client Profile" subtitle="Update client personal contact information" />
+      <PageHeader title="Editar Perfil de Cliente" subtitle="Actualiza la información de contacto personal del cliente" />
 
       <div style={{ maxWidth: '650px' }}>
-        <Card title="Edit Client Information">
+        <Card title="Editar Información del Cliente">
           {errorMsg && <div className="error-box">{errorMsg}</div>}
 
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="form-grid-2">
               <Input
-                label="First Name"
+                label="Nombre"
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
                 required
               />
               <Input
-                label="Last Name"
+                label="Apellido"
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
@@ -115,7 +114,7 @@ export const EditClientPage: React.FC = () => {
             </div>
 
             <Input
-              label="DNI / Identification"
+              label="DNI / Documento de Identidad"
               name="dni"
               value={formData.dni}
               onChange={handleChange}
@@ -123,7 +122,7 @@ export const EditClientPage: React.FC = () => {
             />
 
             <Input
-              label="Phone Number"
+              label="Teléfono"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
@@ -131,7 +130,7 @@ export const EditClientPage: React.FC = () => {
             />
 
             <Input
-              label="Email Address"
+              label="Correo Electrónico"
               name="email"
               type="email"
               value={formData.email}
@@ -139,7 +138,7 @@ export const EditClientPage: React.FC = () => {
             />
 
             <Input
-              label="Date of Birth"
+              label="Fecha de Nacimiento"
               name="dateOfBirth"
               type="date"
               value={formData.dateOfBirth}
@@ -147,7 +146,7 @@ export const EditClientPage: React.FC = () => {
             />
 
             <Input
-              label="Address"
+              label="Dirección"
               name="address"
               value={formData.address}
               onChange={handleChange}
@@ -155,10 +154,10 @@ export const EditClientPage: React.FC = () => {
 
             <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.75rem' }}>
               <Button type="button" variant="secondary" onClick={() => navigate(`/reception/clients/${id}`)}>
-                Cancel
+                Cancelar
               </Button>
               <Button type="submit" variant="primary" isLoading={submitting}>
-                Save Changes
+                Guardar Cambios
               </Button>
             </div>
           </form>

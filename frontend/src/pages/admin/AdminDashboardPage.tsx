@@ -33,7 +33,7 @@ export const AdminDashboardPage: React.FC = () => {
           usersCount: uList.length,
         });
       } catch (err) {
-        console.error('Error fetching admin statistics:', err);
+        console.error('Error al cargar estadísticas de gerencia:', err);
       } finally {
         setLoading(false);
       }
@@ -41,17 +41,17 @@ export const AdminDashboardPage: React.FC = () => {
     fetchAdminStats();
   }, []);
 
-  if (loading) return <LoadingState message="Loading administrative metrics..." />;
+  if (loading) return <LoadingState message="Cargando métricas de gerencia..." />;
 
   return (
     <div>
       <PageHeader
-        title="Admin Control Dashboard"
-        subtitle="Master overview of system metrics, plans, staff users, and memberships"
+        title="Panel de Gerencia"
+        subtitle="Vista general de métricas del sistema, planes, personal y membresías"
         action={
           <Link to="/admin/plans/new">
             <Button variant="primary" icon={<PlusCircle size={16} />}>
-              Create Plan
+              Crear Plan
             </Button>
           </Link>
         }
@@ -64,7 +64,7 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
           <div>
             <div className="stat-value">{stats.clientsCount}</div>
-            <div className="stat-label">Total Clients</div>
+            <div className="stat-label">Total de Clientes</div>
           </div>
         </div>
 
@@ -74,7 +74,7 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
           <div>
             <div className="stat-value">{stats.activeMembershipsCount}</div>
-            <div className="stat-label">Active Memberships</div>
+            <div className="stat-label">Membresías Activas</div>
           </div>
         </div>
 
@@ -84,7 +84,7 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
           <div>
             <div className="stat-value">{stats.plansCount}</div>
-            <div className="stat-label">Membership Plans</div>
+            <div className="stat-label">Planes Configurados</div>
           </div>
         </div>
 
@@ -94,32 +94,32 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
           <div>
             <div className="stat-value">{stats.usersCount}</div>
-            <div className="stat-label">Staff Users</div>
+            <div className="stat-label">Personal Activo</div>
           </div>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-        <Card title="Quick System Management">
+        <Card title="Gestión Rápida del Sistema">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <Link to="/admin/plans">
               <Button variant="secondary" fullWidth style={{ justifyContent: 'flex-start' }}>
-                <CreditCard size={18} /> Manage Membership Plans
+                <CreditCard size={18} /> Gestionar Planes de Membresía
               </Button>
             </Link>
             <Link to="/admin/users">
               <Button variant="secondary" fullWidth style={{ justifyContent: 'flex-start' }}>
-                <Shield size={18} /> Manage Staff Users & Roles
+                <Shield size={18} /> Gestionar Usuarios de Personal
               </Button>
             </Link>
             <Link to="/admin/memberships">
               <Button variant="secondary" fullWidth style={{ justifyContent: 'flex-start' }}>
-                <UserCheck size={18} /> View All Memberships
+                <UserCheck size={18} /> Ver Todas las Membresías
               </Button>
             </Link>
             <Link to="/admin/clients">
               <Button variant="secondary" fullWidth style={{ justifyContent: 'flex-start' }}>
-                <Users size={18} /> View Client Directory
+                <Users size={18} /> Ver Directorio de Clientes
               </Button>
             </Link>
           </div>

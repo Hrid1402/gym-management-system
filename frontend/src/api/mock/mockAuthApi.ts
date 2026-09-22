@@ -17,16 +17,16 @@ export class MockAuthApi implements IAuthApi {
 
     const user = store.users.find((u) => u.email.toLowerCase() === email);
     if (!user) {
-      throw createApiError('Invalid email or password', 401);
+      throw createApiError('Correo electrónico o contraseña inválidos', 401);
     }
 
     if (!user.isActive) {
-      throw createApiError('Account is inactive. Please contact support.', 403);
+      throw createApiError('La cuenta está inactiva. Por favor contacta al soporte.', 403);
     }
 
     const expectedPassword = store.passwords[user.email] || 'password123';
     if (password !== expectedPassword) {
-      throw createApiError('Invalid email or password', 401);
+      throw createApiError('Correo electrónico o contraseña inválidos', 401);
     }
 
     let client = undefined;
@@ -82,13 +82,13 @@ export class MockAuthApi implements IAuthApi {
       // For security, don't reveal if user exists, return standard success text
       return {
         success: true,
-        message: 'If an account exists with this email, recovery instructions have been sent.',
+        message: 'Si existe una cuenta asociada a este correo, se han enviado las instrucciones de recuperación.',
       };
     }
 
     return {
       success: true,
-      message: 'Password recovery email sent successfully! Check your inbox for instructions.',
+      message: '¡Correo de recuperación enviado exitosamente! Revisa tu bandeja de entrada.',
     };
   }
 
@@ -98,11 +98,11 @@ export class MockAuthApi implements IAuthApi {
     const email = data.email.trim().toLowerCase();
 
     if (store.users.some((u) => u.email.toLowerCase() === email)) {
-      throw createApiError('An account with this email already exists', 400);
+      throw createApiError('Ya existe una cuenta registrada con este correo electrónico', 400);
     }
 
     if (store.clients.some((c) => c.dni === data.dni.trim())) {
-      throw createApiError('A client with this DNI already exists', 400);
+      throw createApiError('Ya existe un cliente registrado con este DNI', 400);
     }
 
     const timestamp = Date.now();
@@ -145,7 +145,7 @@ export class MockAuthApi implements IAuthApi {
   async updateProfile(data: any): Promise<AuthSession> {
     await delay();
     const sessionRaw = localStorage.getItem(SESSION_KEY);
-    if (!sessionRaw) throw createApiError('Unauthenticated', 401);
+    if (!sessionRaw) throw createApiError('No autenticado', 401);
 
     const session: AuthSession = JSON.parse(sessionRaw);
     const store = getMockStore();
@@ -177,18 +177,18 @@ export class MockAuthApi implements IAuthApi {
   async changePassword(password: string): Promise<{ success: boolean; message: string }> {
     await delay();
     const sessionRaw = localStorage.getItem(SESSION_KEY);
-    if (!sessionRaw) throw createApiError('Unauthenticated', 401);
+    if (!sessionRaw) throw createApiError('No autenticado', 401);
 
     const session: AuthSession = JSON.parse(sessionRaw);
     const store = getMockStore();
     store.passwords[session.user.email] = password;
     saveMockStore(store);
 
-    return { success: true, message: 'Password changed successfully' };
+    return { success: true, message: 'Contraseña cambiada exitosamente' };
   }
 
   async updatePasswordWithToken(_token: string, _password: string): Promise<{ success: boolean; message: string }> {
     await delay();
-    return { success: true, message: 'Password updated successfully. Please log in with your new password.' };
+    return { success: true, message: 'Contraseña actualizada exitosamente. Por favor inicia sesión con tu nueva contraseña.' };
   }
 }

@@ -24,7 +24,7 @@ export const ReceptionDashboardPage: React.FC = () => {
         setClients(cList);
         setMemberships(mList);
       } catch (err) {
-        console.error('Error loading receptionist dashboard stats:', err);
+        console.error('Error al cargar estadísticas de recepción:', err);
       } finally {
         setLoading(false);
       }
@@ -32,7 +32,7 @@ export const ReceptionDashboardPage: React.FC = () => {
     loadStats();
   }, []);
 
-  if (loading) return <LoadingState message="Loading reception statistics..." />;
+  if (loading) return <LoadingState message="Cargando estadísticas de recepción..." />;
 
   const activeMembershipsCount = memberships.filter((m) => m.status === 'ACTIVE').length;
   const recentClients = clients.slice(-5).reverse();
@@ -40,18 +40,18 @@ export const ReceptionDashboardPage: React.FC = () => {
   return (
     <div>
       <PageHeader
-        title="Reception Dashboard"
-        subtitle="Overview of clients, memberships, and quick receptionist operations"
+        title="Panel de Recepción"
+        subtitle="Resumen de clientes, membresías y operaciones rápidas"
         action={
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <Link to="/reception/clients/new">
               <Button variant="primary" size="sm" icon={<UserPlus size={16} />}>
-                Register Client Account
+                Registrar Cliente
               </Button>
             </Link>
             <Link to="/reception/memberships/new">
               <Button variant="secondary" size="sm" icon={<CreditCard size={16} />}>
-                New Membership
+                Nueva Membresía
               </Button>
             </Link>
           </div>
@@ -65,7 +65,7 @@ export const ReceptionDashboardPage: React.FC = () => {
           </div>
           <div>
             <div className="stat-value">{clients.length}</div>
-            <div className="stat-label">Total Clients</div>
+            <div className="stat-label">Total de Clientes</div>
           </div>
         </div>
 
@@ -75,21 +75,21 @@ export const ReceptionDashboardPage: React.FC = () => {
           </div>
           <div>
             <div className="stat-value">{activeMembershipsCount}</div>
-            <div className="stat-label">Active Memberships</div>
+            <div className="stat-label">Membresías Activas</div>
           </div>
         </div>
       </div>
 
-      <Card title="Recent Clients" action={<Link to="/reception/clients" style={{ fontSize: '0.875rem' }}>View All</Link>}>
+      <Card title="Clientes Recientes" action={<Link to="/reception/clients" style={{ fontSize: '0.875rem' }}>Ver Todos</Link>}>
         <div className="table-container">
           <table className="table">
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Nombre</th>
                 <th>DNI</th>
-                <th>Phone</th>
-                <th>Status</th>
-                <th>Action</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Acción</th>
               </tr>
             </thead>
             <tbody>
@@ -102,12 +102,12 @@ export const ReceptionDashboardPage: React.FC = () => {
                   <td>{c.phone}</td>
                   <td>
                     <span className={`badge ${c.isActive ? 'badge-active' : 'badge-inactive'}`}>
-                      {c.isActive ? 'Active' : 'Inactive'}
+                      {c.isActive ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
                   <td>
                     <Link to={`/reception/clients/${c.id}`} style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                      View
+                      Ver Detalles
                     </Link>
                   </td>
                 </tr>

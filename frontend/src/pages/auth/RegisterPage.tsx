@@ -29,7 +29,12 @@ export const RegisterPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.firstName || !formData.lastName || !formData.dni || !formData.email || !formData.password || !formData.phone) {
-      setError('Please fill in all required fields');
+      setError('Por favor completa todos los campos requeridos.');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres.');
       return;
     }
 
@@ -40,7 +45,7 @@ export const RegisterPage: React.FC = () => {
       await registerClient(formData);
       navigate('/client');
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setError(err.message || 'Error en el registro. Por favor intenta de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -49,28 +54,28 @@ export const RegisterPage: React.FC = () => {
   return (
     <div>
       <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem', color: 'var(--color-neutral-900)' }}>
-        Create Client Account
+        Crear Cuenta de Cliente
       </h2>
       <p style={{ fontSize: '0.875rem', color: 'var(--color-neutral-500)', marginBottom: '1.5rem' }}>
-        Register as a new gym member
+        Regístrate como nuevo miembro del gimnasio
       </p>
 
       {error && <div className="error-box">{error}</div>}
 
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div className="form-grid-2">
           <Input
-            label="First Name"
+            label="Nombre"
             name="firstName"
-            placeholder="John"
+            placeholder="Juan"
             value={formData.firstName}
             onChange={handleChange}
             required
           />
           <Input
-            label="Last Name"
+            label="Apellido"
             name="lastName"
-            placeholder="Doe"
+            placeholder="Pérez"
             value={formData.lastName}
             onChange={handleChange}
             required
@@ -78,46 +83,46 @@ export const RegisterPage: React.FC = () => {
         </div>
 
         <Input
-          label="DNI / Identification"
+          label="DNI / Documento de Identidad"
           name="dni"
-          placeholder="e.g. 12345678X"
+          placeholder="Ej: 12345678A"
           value={formData.dni}
           onChange={handleChange}
           required
         />
 
         <Input
-          label="Phone Number"
+          label="Teléfono"
           name="phone"
           type="tel"
-          placeholder="+1 555-0100"
+          placeholder="+54 9 11 1234-5678"
           value={formData.phone}
           onChange={handleChange}
           required
         />
 
         <Input
-          label="Email Address"
+          label="Correo Electrónico"
           name="email"
           type="email"
-          placeholder="john@example.com"
+          placeholder="juan.perez@ejemplo.com"
           value={formData.email}
           onChange={handleChange}
           required
         />
 
         <Input
-          label="Password"
+          label="Contraseña"
           name="password"
           type="password"
-          placeholder="At least 6 characters"
+          placeholder="Mínimo 6 caracteres"
           value={formData.password}
           onChange={handleChange}
           required
         />
 
         <Input
-          label="Date of Birth (Optional)"
+          label="Fecha de Nacimiento (Opcional)"
           name="dateOfBirth"
           type="date"
           value={formData.dateOfBirth}
@@ -125,24 +130,24 @@ export const RegisterPage: React.FC = () => {
         />
 
         <Input
-          label="Address (Optional)"
+          label="Dirección (Opcional)"
           name="address"
-          placeholder="123 Main St"
+          placeholder="Av. Principal 123"
           value={formData.address}
           onChange={handleChange}
         />
 
         <div style={{ marginTop: '1.5rem' }}>
           <Button type="submit" variant="primary" fullWidth isLoading={loading}>
-            Create Account & Log In
+            Crear Cuenta e Iniciar Sesión
           </Button>
         </div>
       </form>
 
       <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--color-neutral-600)' }}>
-        Already have an account?{' '}
+        ¿Ya tienes una cuenta?{' '}
         <Link to="/login" style={{ fontWeight: 600 }}>
-          Log in
+          Inicia sesión
         </Link>
       </div>
     </div>

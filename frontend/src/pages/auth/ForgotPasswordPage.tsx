@@ -13,7 +13,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email.trim()) return;
 
     setLoading(true);
     setMessage(null);
@@ -22,7 +22,7 @@ export const ForgotPasswordPage: React.FC = () => {
       const result = await recoverPassword(email);
       setMessage(result.message);
     } catch {
-      setMessage('Password recovery request processed.');
+      setMessage('Si existe una cuenta asociada a este correo, se han enviado las instrucciones de recuperación.');
     } finally {
       setLoading(false);
     }
@@ -31,10 +31,10 @@ export const ForgotPasswordPage: React.FC = () => {
   return (
     <div>
       <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem', color: 'var(--color-neutral-900)' }}>
-        Reset Password
+        Recuperar Contraseña
       </h2>
       <p style={{ fontSize: '0.875rem', color: 'var(--color-neutral-500)', marginBottom: '1.5rem' }}>
-        Enter your registered email address to receive password recovery instructions.
+        Ingresa tu correo electrónico registrado para recibir las instrucciones de recuperación.
       </p>
 
       {message && (
@@ -45,22 +45,22 @@ export const ForgotPasswordPage: React.FC = () => {
 
       <form onSubmit={handleSubmit}>
         <Input
-          label="Email Address"
+          label="Correo Electrónico"
           type="email"
-          placeholder="your.email@example.com"
+          placeholder="tu.correo@ejemplo.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
 
         <Button type="submit" variant="primary" fullWidth isLoading={loading} style={{ marginTop: '0.5rem' }}>
-          Send Recovery Link
+          Enviar Enlace de Recuperación
         </Button>
       </form>
 
       <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem' }}>
         <Link to="/login" style={{ fontWeight: 500 }}>
-          Back to Login
+          Volver a Iniciar Sesión
         </Link>
       </div>
     </div>

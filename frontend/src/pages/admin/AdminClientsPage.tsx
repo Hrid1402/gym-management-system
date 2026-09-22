@@ -32,7 +32,7 @@ export const AdminClientsPage: React.FC = () => {
         setClients(cList);
         setMemberships(mList);
       } catch (err) {
-        console.error('Failed to load admin client view:', err);
+        console.error('Error al cargar clientes en gerencia:', err);
       } finally {
         setLoading(false);
       }
@@ -81,11 +81,11 @@ export const AdminClientsPage: React.FC = () => {
 
   const isFiltered = searchTerm.trim() !== '' || accountFilter !== 'ALL' || membershipFilter !== 'ALL' || sortBy !== 'name_asc';
 
-  if (loading) return <LoadingState message="Loading client directory..." />;
+  if (loading) return <LoadingState message="Cargando directorio de clientes..." />;
 
   return (
     <div>
-      <PageHeader title="Client Management" subtitle="Overview of all registered gym clients" />
+      <PageHeader title="Gestión de Clientes" subtitle="Visión global de todos los clientes registrados del gimnasio" />
 
       {/* Filter & Toolbar Header */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.25rem' }}>
@@ -103,15 +103,15 @@ export const AdminClientsPage: React.FC = () => {
                 border: isFiltered ? '1px solid #91d5ff' : '1px solid var(--color-neutral-300)',
               }}
             >
-              {sorted.length} {sorted.length === 1 ? 'client' : 'clients'} {isFiltered ? `(filtered from ${clients.length})` : 'total'}
+              {sorted.length} {sorted.length === 1 ? 'cliente' : 'clientes'} {isFiltered ? `(filtrados de ${clients.length})` : 'total'}
             </span>
           </div>
 
           {/* Filter Controls */}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <div style={{ width: '220px' }}>
+            <div style={{ minWidth: '180px', flex: '1 1 180px' }}>
               <Input
-                placeholder="Search Name, DNI, Phone, Email..."
+                placeholder="Buscar Nombre, DNI, Teléfono..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -122,9 +122,9 @@ export const AdminClientsPage: React.FC = () => {
                 value={accountFilter}
                 onChange={(e) => setAccountFilter(e.target.value)}
                 options={[
-                  { value: 'ALL', label: 'All Accounts' },
-                  { value: 'ACTIVE', label: 'Active Users' },
-                  { value: 'INACTIVE', label: 'Inactive' },
+                  { value: 'ALL', label: 'Todas las Cuentas' },
+                  { value: 'ACTIVE', label: 'Cuentas Activas' },
+                  { value: 'INACTIVE', label: 'Cuentas Inactivas' },
                 ]}
               />
             </div>
@@ -134,11 +134,11 @@ export const AdminClientsPage: React.FC = () => {
                 value={membershipFilter}
                 onChange={(e) => setMembershipFilter(e.target.value)}
                 options={[
-                  { value: 'ALL', label: 'All Memberships' },
-                  { value: 'ACTIVE', label: 'Active Mem.' },
-                  { value: 'PENDING', label: 'Pending Mem.' },
-                  { value: 'CANCELLED', label: 'Cancelled Mem.' },
-                  { value: 'NONE', label: 'No Membership' },
+                  { value: 'ALL', label: 'Todas las Membresías' },
+                  { value: 'ACTIVE', label: 'Membresía Activa' },
+                  { value: 'PENDING', label: 'Membresía Pendiente' },
+                  { value: 'CANCELLED', label: 'Membresía Cancelada' },
+                  { value: 'NONE', label: 'Sin Membresía' },
                 ]}
               />
             </div>
@@ -148,9 +148,9 @@ export const AdminClientsPage: React.FC = () => {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as ClientSortOption)}
                 options={[
-                  { value: 'name_asc', label: 'Sort: Name (A-Z)' },
-                  { value: 'name_desc', label: 'Sort: Name (Z-A)' },
-                  { value: 'dni_asc', label: 'Sort: DNI' },
+                  { value: 'name_asc', label: 'Orden: Nombre (A-Z)' },
+                  { value: 'name_desc', label: 'Orden: Nombre (Z-A)' },
+                  { value: 'dni_asc', label: 'Orden: DNI' },
                 ]}
               />
             </div>
@@ -159,18 +159,18 @@ export const AdminClientsPage: React.FC = () => {
       </div>
 
       {sorted.length === 0 ? (
-        <EmptyState title="No clients found" description="No registered clients match your filter criteria." />
+        <EmptyState title="No se encontraron clientes" description="No hay clientes que coincidan con los criterios de búsqueda." />
       ) : (
         <div className="table-container">
           <table className="table">
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Nombre</th>
                 <th>DNI</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th>Account Status</th>
-                <th>Membership</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+                <th>Estado de Cuenta</th>
+                <th>Membresía</th>
               </tr>
             </thead>
             <tbody>
@@ -193,7 +193,7 @@ export const AdminClientsPage: React.FC = () => {
                       {memStatus ? (
                         <StatusBadge status={memStatus} />
                       ) : (
-                        <span style={{ fontSize: '0.75rem', color: 'var(--color-neutral-400)' }}>None</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-neutral-400)' }}>Ninguna</span>
                       )}
                     </td>
                   </tr>

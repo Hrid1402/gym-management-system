@@ -43,17 +43,17 @@ export const ResetPasswordPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) {
-      setErrorMsg('Missing cryptographic authorization token.');
+      setErrorMsg('Falta el token de autorización de recuperación.');
       return;
     }
 
     if (password.length < 6) {
-      setErrorMsg('Password must be at least 6 characters.');
+      setErrorMsg('La contraseña debe tener al menos 6 caracteres.');
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMsg('Passwords do not match.');
+      setErrorMsg('Las contraseñas no coinciden.');
       return;
     }
 
@@ -65,7 +65,7 @@ export const ResetPasswordPage: React.FC = () => {
       const res = await authService.updatePasswordWithToken(token, password);
       setSuccessMsg(res.message);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to update password. The link may have expired.');
+      setErrorMsg(err.message || 'Error al actualizar la contraseña. El enlace puede haber expirado.');
     } finally {
       setLoading(false);
     }
@@ -78,13 +78,13 @@ export const ResetPasswordPage: React.FC = () => {
         <div style={{ textAlign: 'center', padding: '1rem 0' }}>
           <AlertTriangle size={48} style={{ color: 'var(--color-danger)', marginBottom: '1rem' }} />
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--color-neutral-900)' }}>
-            Invalid or Missing Reset Link
+            Enlace Inválido o Ausente
           </h2>
           <p style={{ fontSize: '0.875rem', color: 'var(--color-neutral-600)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-            To reset your password, you must open the recovery link sent to your email. Accessing this page directly without an authentication token is prohibited.
+            Para restablecer tu contraseña, debes abrir el enlace de recuperación enviado a tu correo electrónico. No se permite acceder a esta página sin un token válido.
           </p>
           <Button variant="primary" fullWidth onClick={() => navigate('/login')}>
-            Return to Login Page
+            Volver al Inicio de Sesión
           </Button>
         </div>
       </div>
@@ -97,13 +97,13 @@ export const ResetPasswordPage: React.FC = () => {
         <div style={{ textAlign: 'center', padding: '1rem 0' }}>
           <CheckCircle size={48} style={{ color: 'var(--color-success)', marginBottom: '1rem' }} />
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--color-neutral-900)' }}>
-            Password Reset Complete!
+            ¡Contraseña Restablecida Con Éxito!
           </h2>
           <p style={{ fontSize: '0.875rem', color: 'var(--color-neutral-600)', marginBottom: '1.5rem' }}>
             {successMsg}
           </p>
           <Button variant="primary" fullWidth onClick={() => navigate('/login')}>
-            Log In Now
+            Iniciar Sesión Ahora
           </Button>
         </div>
       </div>
@@ -115,11 +115,11 @@ export const ResetPasswordPage: React.FC = () => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
         <KeyRound size={24} style={{ color: 'var(--color-primary)' }} />
         <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-neutral-900)' }}>
-          Set New Password
+          Nueva Contraseña
         </h2>
       </div>
       <p style={{ fontSize: '0.875rem', color: 'var(--color-neutral-500)', marginBottom: '1.5rem' }}>
-        Enter your new secure password below to complete account recovery.
+        Ingresa tu nueva contraseña a continuación para completar la recuperación de tu cuenta.
       </p>
 
       {errorMsg && (
@@ -130,31 +130,31 @@ export const ResetPasswordPage: React.FC = () => {
 
       <form onSubmit={handleSubmit}>
         <Input
-          label="New Password"
+          label="Nueva Contraseña"
           type="password"
-          placeholder="Minimum 6 characters"
+          placeholder="Mínimo 6 caracteres"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
 
         <Input
-          label="Confirm New Password"
+          label="Confirmar Nueva Contraseña"
           type="password"
-          placeholder="Re-enter new password"
+          placeholder="Vuelve a ingresar la contraseña"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
         />
 
         <Button type="submit" variant="primary" fullWidth isLoading={loading} style={{ marginTop: '0.5rem' }}>
-          Update Password
+          Actualizar Contraseña
         </Button>
       </form>
 
       <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem' }}>
         <Link to="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontWeight: 500 }}>
-          <ArrowLeft size={16} /> Back to Login
+          <ArrowLeft size={16} /> Volver al Inicio de Sesión
         </Link>
       </div>
     </div>

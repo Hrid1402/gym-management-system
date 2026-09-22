@@ -38,7 +38,7 @@ export const NewClientPage: React.FC = () => {
           setInitialPlanId(activePlans[0].id);
         }
       } catch (err) {
-        console.error('Error fetching plans:', err);
+        console.error('Error al obtener planes:', err);
       }
     };
     fetchActivePlans();
@@ -51,7 +51,7 @@ export const NewClientPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.firstName || !formData.lastName || !formData.dni || !formData.phone || !formData.email) {
-      setErrorMsg('Please fill in all required client details.');
+      setErrorMsg('Por favor completa todos los datos requeridos del cliente.');
       return;
     }
 
@@ -80,13 +80,13 @@ export const NewClientPage: React.FC = () => {
             startDate: initialStartDate,
           });
         } catch (memErr: any) {
-          console.error('Client registered, but membership failed:', memErr);
+          console.error('Cliente registrado pero falló la membresía:', memErr);
         }
       }
 
       navigate(`/reception/clients/${newClientId}`);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to register client account.');
+      setErrorMsg(err.message || 'Error al registrar la cuenta del cliente.');
     } finally {
       setLoading(false);
     }
@@ -95,29 +95,29 @@ export const NewClientPage: React.FC = () => {
   return (
     <div>
       <PageHeader
-        title="Register New Client Account"
-        subtitle="Staff workflow to register a client account and optional initial membership"
+        title="Registrar Cuenta de Cliente"
+        subtitle="Flujo de recepción para registrar cliente y membresía inicial opcional"
       />
 
       <div style={{ maxWidth: '650px' }}>
-        <Card title="Client Account Registration">
+        <Card title="Registro de Cuenta de Cliente">
           {errorMsg && <div className="error-box">{errorMsg}</div>}
 
           <form onSubmit={handleSubmit}>
             <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-neutral-700)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>
-              1. Personal & Contact Details
+              1. Datos Personales y de Contacto
             </h4>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="form-grid-2">
               <Input
-                label="First Name"
+                label="Nombre"
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
                 required
               />
               <Input
-                label="Last Name"
+                label="Apellido"
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
@@ -126,7 +126,7 @@ export const NewClientPage: React.FC = () => {
             </div>
 
             <Input
-              label="DNI / Identification"
+              label="DNI / Documento de Identidad"
               name="dni"
               value={formData.dni}
               onChange={handleChange}
@@ -134,7 +134,7 @@ export const NewClientPage: React.FC = () => {
             />
 
             <Input
-              label="Phone Number"
+              label="Teléfono"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
@@ -142,7 +142,7 @@ export const NewClientPage: React.FC = () => {
             />
 
             <Input
-              label="Account Email"
+              label="Correo Electrónico"
               name="email"
               type="email"
               value={formData.email}
@@ -151,19 +151,19 @@ export const NewClientPage: React.FC = () => {
             />
 
             <Input
-              label="Initial Account Password"
+              label="Contraseña Inicial de Cuenta"
               name="accountPassword"
               type="text"
-              placeholder="Defaults to 'temp1234' if blank"
+              placeholder="Por defecto 'temp1234' si se deja en blanco"
               value={formData.accountPassword}
               onChange={handleChange}
-              helperText="Client can use this password to log in"
+              helperText="El cliente podrá usar esta contraseña para iniciar sesión"
             />
 
             <hr style={{ margin: '1.5rem 0', borderColor: 'var(--color-neutral-200)' }} />
 
             <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-neutral-700)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>
-              2. Initial Membership (Optional)
+              2. Membresía Inicial (Opcional)
             </h4>
 
             <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -175,17 +175,17 @@ export const NewClientPage: React.FC = () => {
                 style={{ width: '16px', height: '16px', cursor: 'pointer' }}
               />
               <label htmlFor="hasMembership" style={{ fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>
-                Register an initial membership plan now
+                Asignar un plan de membresía inicial ahora
               </label>
             </div>
 
             {hasInitialMembership && (
               <div style={{ backgroundColor: 'var(--color-neutral-50)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
                 <Select
-                  label="Select Membership Plan"
+                  label="Seleccionar Plan de Membresía"
                   options={plans.map((p) => ({
                     value: p.id,
-                    label: `${p.name} - $${p.price} (${p.durationDays} days)`,
+                    label: `${p.name} - $${p.price} (${p.durationDays} días)`,
                   }))}
                   value={initialPlanId}
                   onChange={(e) => setInitialPlanId(e.target.value)}
@@ -193,7 +193,7 @@ export const NewClientPage: React.FC = () => {
                 />
 
                 <Input
-                  label="Start Date"
+                  label="Fecha de Inicio"
                   type="date"
                   value={initialStartDate}
                   onChange={(e) => setInitialStartDate(e.target.value)}
@@ -204,7 +204,7 @@ export const NewClientPage: React.FC = () => {
 
             <div style={{ marginTop: '1.5rem' }}>
               <Button type="submit" variant="primary" fullWidth isLoading={loading}>
-                Register Client Account
+                Registrar Cuenta de Cliente
               </Button>
             </div>
           </form>
